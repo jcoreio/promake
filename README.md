@@ -47,7 +47,7 @@ You tell it to run the CLI in your script, instead of running your script via a 
 * It's obvious how to split your rule and task definitions into multiple files
 * You could even use it in the browser for optimizing various chains of contingent operations
 
-## Quick start
+# Quick start
 
 ### Install promake
 
@@ -55,7 +55,7 @@ You tell it to run the CLI in your script, instead of running your script via a 
 npm install --save-dev promake
 ```
 
-### A minimal make script
+### Create a make script
 
 Save the following file as `promake` (or whatever name you want):
 ```js
@@ -75,7 +75,8 @@ Make the script executable:
 > chmod +x promake
 ```
 
-Then run the `hello` task:
+### Run the make script
+
 ```
 > ./promake hello
 hello world!
