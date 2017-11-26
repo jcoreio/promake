@@ -1,6 +1,6 @@
 {
   "presets": ["es2015", "stage-1", "flow"],
-  "plugins": ["transform-runtime"],
+  "plugins": ["transform-runtime", "add-module-exports"],
   "env": {
     "test": {
       "plugins": ["istanbul"]
