@@ -19,9 +19,10 @@ Promise-based JS make clone that can target anything, not just files
   * [The `Resource` interface](#the-resource-interface)
     + [lastModified(): Promise](#lastmodified-promise)
 - [How to](#how-to)
-  * [Globbing](#globbing)
-  * [File System Operations](#file-system-operations)
-  * [Executing shell commands](#executing-shell-commands)
+  * [Glob Files](#glob-files)
+  * [Perform File System Operations](#perform-file-system-operations)
+  * [Execute shell commands](#execute-shell-commands)
+  * [Make Tasks Prerequisites of Other Tasks](#make-tasks-prerequisites-of-other-tasks)
 - [Examples](#examples)
   * [Transpiling files with Babel](#transpiling-files-with-babel)
 
@@ -90,7 +91,8 @@ problems.
 
 `const Promake = require('promake')`
 
-### `rule(targets, [prerequisites], recipe, [options])`
+### `rule(targets, [prerequisites], [recipe], [options])`
+
 Creates a rule that indicates that `targets` can be created from `prerequisites` by running the given `recipe`.
 If all `targets` exist and are newer than all `prerequisites`, `promake` will assume they are up-to-date and skip
 the `recipe`.
@@ -101,11 +103,20 @@ rule.  If any prerequisite doesn't exist and there is no rule for it, the build 
 The `targets` and `prerequisites` can be:
 * a `string` (strings are always interpreted as file system paths relative to the working directory)
 * an object conforming to [the `Resource` interface](#the-resource-interface)
+* (*`prerequisites` only*) another `Rule`, which is the same as adding that `Rule`'s own `targets` as prerequisites.
 * or an array of the above
+
+**Warning**: `rule` does not expand glob patterns (e.g. `src/**/*.js`) in `targets` or `prerequisites`; instead you must
+glob yourself and pass in the array of matching files.  See [Glob Files](#glob-files) for an example of how to do so.
 
 The `recipe` is a function that should ensure that `targets` get created or updated.  If it returns a `Promise`,
 `promake` will wait for it to resolve before moving on to the next rule or task.  If the `recipe` throws an Error or
 returns a `Promise` that rejects, the build will fail.
+
+Returns the created `Rule`.
+
+You can get the `Rule` for a given target by calling `rule(target)` (without `prerequisites` or `recipe`), but it will
+throw and `Error` if no such `Rule` exists, or you call it with multiple targets.
 
 #### `options`
 * `runAtLeastOnce` - if true, the `recipe` will be run at least once, even if the `targets` are apparently up-to-date.
@@ -113,13 +124,24 @@ returns a `Promise` that rejects, the build will fail.
 
 ### `task(name, [prerequisites], [recipe])`
 
-Creates a task that can be run by `name` from the CLI regardless of whether `name` is an actual file that exists,
-similar to a [phony target in `make`](https://www.gnu.org/software/make/manual/make.html#Phony-Targets).
+Creates a task, which is really just a `rule`, but can be run by `name` from the CLI regardless of whether `name` is an
+actual file that exists, similar to a [phony target in `make`](https://www.gnu.org/software/make/manual/make.html#Phony-Targets).
+
+Task names take precedence over file names when specifying what to build in CLI options.
 
 The `prerequisites` take the same form as for a `rule`, and if given, `promake` will ensure that they exist and are
 up-to-date before the task is running, running any rules applicable to the `prerequisites` as necessary.
 
+**Warning**: putting the `name` of another task in `prerequisites` does not work because all `string`s in
+`prerequisites` are interpreted as files.  See
+[Make Tasks Prerequisites of Other Tasks](#make-tasks-prerequisites-of-other-tasks) for more details.
+
 If `recipe` is given, it will be run any time the task is requested, even if the `prerequisites` are up-to-date.
+
+Returns the created `Rule`.
+
+Calling `task(name)` without any `prerequisites` or `recipe` looks up and returns the previously created task `Rule` for
+`name`, but *it will throw an `Error`* if no such task exists.
 
 ### `exec(command, [options])`
 
@@ -157,7 +179,7 @@ Otherwise, returns the resource's last modified time, in milliseconds.
 
 # How to
 
-## Globbing
+## Glob files
 
 `promake` has no built-in globbing; you must pass arrays of files to `rule`s and `task`s.  This is easy with the
 `glob` package:
@@ -173,7 +195,7 @@ const libFiles = srcFiles.map(file => file.replace(/^src/, 'lib'))
 rule(libFiles, srcFiles, () => { /* code that compiles srcFiles to libFiles */ })
 ```
 
-## File System Operations
+## Perform File System Operations
 
 I recommend using [`fs-extra`](https://github.com/jprichardson/node-fs-extra):
 ```sh
@@ -196,7 +218,7 @@ rule(dest, src, async () => {
 })
 ```
 
-## Executing shell commands
+## Execute shell commands
 
 The `Promake` class has an `exec` method, which is really just a wrapper for `require('child-process-async').exec` that
 controls logging.
@@ -216,6 +238,33 @@ rule(dest, src, async () => {
   await exec(`git add ${dest}`)
   await exec(`git commit -m "update ${dest}"`)
 })
+```
+
+## Make Tasks Prerequisites of Other Tasks
+
+Putting the `name` of another task in the `prerequisites` of `rule` or `task` does not work because all `string`s in
+`prerequisites` are interpreted as files.
+
+Instead, you can just include the `Rule` returned by `rule` or `task` in the `prerequisites` of another.  For example:
+```js
+const serverTask = task('server', [...serverBuildFiles, ...universalBuildFiles])
+const clientTask = task('client', clientBuildFiles)
+task('build', [serverTask, clientTask])
+```
+
+Or you can call `task(name)` to get a reference to the previously created `Rule`:
+```js
+task('server', [...serverBuildFiles, ...universalBuildFiles])
+task('client', clientBuildFiles)
+task('build', [task('server'), task('client')])
+```
+
+Sometimes I like to use the following structure for defining an `all` task:
+```js
+task('all', [
+  task('server', [...serverBuildFiles, ...universalBuildFiles]),
+  task('client', clientBuildFiles),
+])
 ```
 
 # Examples

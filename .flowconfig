@@ -1,6 +1,7 @@
 [ignore]
 <PROJECT_ROOT>/lib/.*
 <PROJECT_ROOT>/node_modules/child-process-async/.*
+<PROJECT_ROOT>/node_modules/babel-plugin-flow-runtime/.*
 .*/node_modules/.*/tests?/.*\.json
 
 [include]

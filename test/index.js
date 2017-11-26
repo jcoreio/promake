@@ -7,12 +7,67 @@ import sinon from 'sinon'
 import {exec} from 'child-process-async'
 import fs from 'fs-extra'
 import path from 'path'
+import {RuntimeError} from 'flow-runtime'
 
 import Promake from '../src'
 import TestResource from './TestResource'
 
 describe('Promake', () => {
+  describe('.task', () => {
+    describe('with no prerequisites or recipe', () => {
+      it('returns Rule for a task', () => {
+        const {task} = new Promake()
+        const fooTask = task('foo', () => {})
+        const barTask = task('bar', () => {})
+        expect(task('foo')).to.equal(fooTask)
+        expect(task('bar')).to.equal(barTask)
+      })
+      it('throws when multiple targets are passed', () => {
+        const {task} = new Promake()
+        task('foo', () => {})
+        task('bar', () => {})
+        expect(() => task(['foo', 'bar'])).to.throw(Error)
+      })
+      it('throws when no task for target exists', () => {
+        const {task} = new Promake()
+        expect(() => task('foo')).to.throw(Error)
+      })
+    })
+  })
   describe('.rule', () => {
+    it('throws when invalid target types are given', () => {
+      const {rule} = new Promake()
+      expect(() => rule(2, () => {})).to.throw(RuntimeError)
+      expect(() => rule([2], () => {})).to.throw(RuntimeError)
+      expect(() => rule([() => {}], () => {})).to.throw(RuntimeError)
+      expect(() => rule(rule('hello', () => {}), () => {})).to.throw(RuntimeError)
+    })
+    it('throws when invalid prerequisite types are given', () => {
+      const {rule} = new Promake()
+      expect(() => rule('hello', 2, () => {})).to.throw(RuntimeError)
+      expect(() => rule('hello', [2], () => {})).to.throw(RuntimeError)
+      expect(() => rule('hello', [() => {}], () => {})).to.throw(RuntimeError)
+    })
+    describe('with no prerequisites or receipe', () => {
+      it('returns Rule for a target', () => {
+        const {rule} = new Promake()
+        const fooRule = rule('foo', () => {})
+        const barBazRule = rule(['bar', 'baz'], () => {})
+        expect(rule('foo')).to.equal(fooRule)
+        expect(rule('bar')).to.equal(barBazRule)
+        expect(rule('baz')).to.equal(barBazRule)
+      })
+      it('throws when multiple targets are passed', () => {
+        const {rule} = new Promake()
+        rule('foo', () => {})
+        rule('bar', () => {})
+        expect(() => rule(['foo', 'bar'])).to.throw(Error)
+      })
+      it('throws when no rule for target exists', () => {
+        const {rule} = new Promake()
+        expect(() => rule('foo')).to.throw(Error)
+      })
+    })
     describe('.then', () => {
       it('runs prerequisites that are missing', async () => {
         const {rule} = new Promake()
@@ -143,7 +198,7 @@ describe('Promake', () => {
       expect(await fs.pathExists('test/integration/promake/build')).to.be.false
     })
     it('builds after clean', async () => {
-      await exec('babel-node promake clean server client', {cwd})
+      await exec('babel-node promake clean build', {cwd})
       expect(await fs.pathExists('test/integration/build/assets/client.bundle.js')).to.be.true
       expect(await fs.pathExists('test/integration/build/server/index.js')).to.be.true
       expect(await fs.pathExists('test/integration/build/server/foo/index.js')).to.be.true
@@ -151,8 +206,8 @@ describe('Promake', () => {
       expect(await fs.pathExists('test/integration/build/universal/foo/index.js')).to.be.true
     })
     it("doesn't rebuild after build", async () => {
-      await exec('babel-node promake clean server client', {cwd})
-      const {stderr} = await exec('babel-node promake server client', {cwd})
+      await exec('babel-node promake clean build', {cwd})
+      const {stderr} = await exec('babel-node promake build', {cwd})
       expect(stderr).not.to.match(/making/i)
       expect(stderr).to.match(/nothing to be done/i)
     })

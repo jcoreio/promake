@@ -57,7 +57,9 @@
     "babel-cli": "^6.23.0",
     "babel-core": "^6.23.1",
     "babel-eslint": "^7.1.1",
+    "babel-plugin-flow-runtime": "^0.15.0",
     "babel-plugin-istanbul": "^4.0.0",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-es2015": "^6.22.0",
     "babel-preset-flow": "^6.23.0",
@@ -89,6 +91,7 @@
   "dependencies": {
     "chalk": "^2.3.0",
     "child-process-async": "^1.0.1",
-    "es6-promisify": "^5.0.0"
+    "es6-promisify": "^5.0.0",
+    "flow-runtime": "^0.16.0"
   }
 }

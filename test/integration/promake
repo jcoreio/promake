@@ -33,8 +33,10 @@ rule(clientBuildFiles, clientPrerequisites, async () => {
   await exec('webpack --progress --colors')
 })
 
-task('server', [...serverBuildFiles, ...universalBuildFiles])
-task('client', clientBuildFiles)
+task('build', [
+  task('server', [...serverBuildFiles, ...universalBuildFiles]),
+  task('client', clientBuildFiles),
+])
 
 task('clean', () => fs.remove('build'))
 

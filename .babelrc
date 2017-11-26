@@ -1,6 +1,6 @@
 {
   "presets": ["es2015", "stage-1", "flow"],
-  "plugins": ["transform-runtime"],
+  "plugins": ["transform-runtime", "transform-decorators-legacy", ["flow-runtime", {"assert": false}]],
   "env": {
     "test": {
       "plugins": ["istanbul"]

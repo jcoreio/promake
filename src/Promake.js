@@ -1,15 +1,23 @@
 // @flow
 
+import {reify} from 'flow-runtime'
+import type {Type} from 'flow-runtime'
 import type {Resource} from './Resource'
 import FileResource from './FileResource'
 import Rule from './Rule'
 import TaskResource from './TaskResource'
+// $FlowFixMe
 import {exec} from 'child-process-async'
 import chalk from 'chalk'
-// $FlowFixMe
-import type {ChildProcess} from 'child-process-async'
+import type {ChildProcess} from 'child_process'
 
-type Resources = Array<any> | string | Resource
+type Resources = Array<string | Resource> | string | Resource
+
+type Targets = Resources
+type Prerequisites = Array<string | Resource | Rule> | string | Resource | Rule
+
+const ResourcesType = (reify: Type<Resources>)
+const PrerequisitesType = (reify: Type<Prerequisites>)
 
 type CliOptions = {
   exit?: boolean,
@@ -27,7 +35,7 @@ class Promake {
   rules: Map<Resource, Rule> = new Map()
   verbosity: Verbosity = VERBOSITY_DEFAULT
 
-  _normalizeResource = (resource: string | Resource): Resource => {
+  _normalizeResource = (resource: any): Resource => {
     if (typeof resource === 'string') {
       let file = this.fileResources.get(resource)
       if (!file) this.fileResources.set(resource, file = new FileResource(resource))
@@ -36,10 +44,23 @@ class Promake {
     return resource
   }
 
-  _normalizeResources = (resources: Resources): Array<Resource> => {
+  _normalizePrerequisite = (resource: any): Array<Resource> | Resource => {
+    if (resource instanceof Rule) return resource.targets
+    return this._normalizeResource(resource)
+  }
+
+  _normalizeResources = (resources: any): Array<Resource> => {
+    ResourcesType.assert(resources)
     return Array.isArray(resources)
       ? resources.map(this._normalizeResource)
       : [this._normalizeResource(resources)]
+  }
+
+  _normalizePrerequisites = (prerequisites: any): Array<Resource> => {
+    PrerequisitesType.assert(prerequisites)
+    if (Array.isArray(prerequisites)) return [].concat(...prerequisites.map(this._normalizePrerequisite))
+    const normalized = this._normalizePrerequisite(prerequisites)
+    return Array.isArray(normalized) ? normalized : [normalized]
   }
 
   _normalizeNames = (names: Array<string>): Array<Resource> => {
@@ -78,16 +99,23 @@ class Promake {
     return child
   }
 
-  rule = (targets: Resources, prerequisites: ?Resources, recipe: () => ?Promise<any>, options?: {runAtLeastOnce?: boolean}): Rule => {
+  rule = (targets: Targets, prerequisites?: any, recipe?: () => ?Promise<any>, options?: {runAtLeastOnce?: boolean}): Rule => {
     if (typeof prerequisites === 'function') {
       options = (recipe: any)
       recipe = (prerequisites: any)
       prerequisites = null
     }
+    if (!prerequisites && !recipe) {
+      if (Array.isArray(targets)) throw new Error('You must pass only one target when looking up a rule')
+      const target = this._normalizeResource(targets)
+      const rule = this.rules.get(target)
+      if (!rule) throw new Error(`No rule found for ${target.toString()}`)
+      return rule
+    }
     const rule = new Rule({
       promake: this,
       targets: this._normalizeResources(targets),
-      prerequisites: prerequisites ? this._normalizeResources(prerequisites) : [],
+      prerequisites: prerequisites ? this._normalizePrerequisites(prerequisites) : [],
       recipe,
       runAtLeastOnce: Boolean(options && options.runAtLeastOnce),
     })
@@ -95,17 +123,24 @@ class Promake {
     return rule
   }
 
-  task = (name: string, prerequisites?: any, recipe?: () => ?Promise<any>): Rule => {
+  task = (name: string, prerequisites: any, recipe?: () => ?Promise<any>): Rule => {
     if (prerequisites instanceof Function) {
-      recipe = prerequisites
+      recipe = (prerequisites: any)
       prerequisites = []
     }
+    if (!prerequisites && !recipe) {
+      const target = this.taskResources.get(name)
+      const result = target ? this.rules.get(target) : null
+      if (!result) throw new Error(`No task named ${name} exists`)
+      return result
+    }
+    if (this.taskResources.has(name)) throw new Error(`A task named ${name} already exists`)
     const target = new TaskResource({name, promake: this})
     this.taskResources.set(name, target)
     const rule = new Rule({
       promake: this,
       targets: [target],
-      prerequisites: prerequisites ? this._normalizeResources((prerequisites: any)) : [],
+      prerequisites: prerequisites ? this._normalizePrerequisites((prerequisites: any)) : [],
       recipe,
     })
     this.rules.set(target, rule)
