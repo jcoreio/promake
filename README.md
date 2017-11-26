@@ -100,27 +100,30 @@ the `recipe`.
 If there is another rule for a given prerequisite, `promake` will run that rule first before running the recipe for this
 rule.  If any prerequisite doesn't exist and there is no rule for it, the build will fail.
 
-The `targets` and `prerequisites` can be:
+##### `target` and `prerequisites`
+These can be:
 * a `string` (strings are always interpreted as file system paths relative to the working directory)
 * an object conforming to [the `Resource` interface](#the-resource-interface)
 * (*`prerequisites` only*) another `Rule`, which is the same as adding that `Rule`'s own `targets` as prerequisites.
 * or an array of the above
 
-**Warning**: `rule` does not expand glob patterns (e.g. `src/**/*.js`) in `targets` or `prerequisites`; instead you must
+**Warning**: glob patterns (e.g. `src/**/*.js`) in `targets` or `prerequisites` will not be expanded; instead you must
 glob yourself and pass in the array of matching files.  See [Glob Files](#glob-files) for an example of how to do so.
 
-The `recipe` is a function that should ensure that `targets` get created or updated.  If it returns a `Promise`,
+##### `recipe`
+A function that should ensure that `targets` get created or updated.  If it returns a `Promise`,
 `promake` will wait for it to resolve before moving on to the next rule or task.  If the `recipe` throws an Error or
 returns a `Promise` that rejects, the build will fail.
 
-Returns the created `Rule`.
+##### `options`
+* `runAtLeastOnce` - if true, the `recipe` will be run at least once, even if the `targets` are apparently up-to-date.
+  This is useful for rules that need to look at the contents of targets to decide whether to update them.
+
+#### Returns
+The created `Rule`.
 
 You can get the `Rule` for a given target by calling `rule(target)` (without `prerequisites` or `recipe`), but it will
 throw and `Error` if no such `Rule` exists, or you call it with multiple targets.
-
-#### `options`
-* `runAtLeastOnce` - if true, the `recipe` will be run at least once, even if the `targets` are apparently up-to-date.
-  This is useful for rules that need to look at the contents of targets to decide whether to update them.
 
 ### `task(name, [prerequisites], [recipe])`
 
@@ -129,16 +132,22 @@ actual file that exists, similar to a [phony target in `make`](https://www.gnu.o
 
 Task names take precedence over file names when specifying what to build in CLI options.
 
-The `prerequisites` take the same form as for a `rule`, and if given, `promake` will ensure that they exist and are
+##### `name`
+The name of the task
+
+##### `prerequisites`
+These take the same form as for a `rule`, and if given, `promake` will ensure that they exist and are
 up-to-date before the task is running, running any rules applicable to the `prerequisites` as necessary.
 
 **Warning**: putting the `name` of another task in `prerequisites` does not work because all `string`s in
 `prerequisites` are interpreted as files.  See
 [Make Tasks Prerequisites of Other Tasks](#make-tasks-prerequisites-of-other-tasks) for more details.
 
-If `recipe` is given, it will be run any time the task is requested, even if the `prerequisites` are up-to-date.
+##### `recipe`
+If given, it will be run any time the task is requested, even if the `prerequisites` are up-to-date.
 
-Returns the created `Rule`.
+#### Returns
+The created `Rule`.
 
 Calling `task(name)` without any `prerequisites` or `recipe` looks up and returns the previously created task `Rule` for
 `name`, but *it will throw an `Error`* if no such task exists.
@@ -172,10 +181,10 @@ instances are always considered different, even if they represent the same resou
 
 Currently, instances need to define only one method:
 
-### lastModified(): Promise<?number>
+##### `lastModified(): Promise<?number>`
 
-If the resource doesn't exist, returns null or undefined.
-Otherwise, returns the resource's last modified time, in milliseconds.
+If the resource doesn't exist, the returned `Promise` should resolve to `null` or `undefined`.
+Otherwise, it should resolve to the resource's last modified time, in milliseconds.
 
 # How to
 
