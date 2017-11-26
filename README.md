@@ -23,8 +23,10 @@ Promise-based JS make clone that can target anything, not just files
   * [Perform File System Operations](#perform-file-system-operations)
   * [Execute Shell Commands](#execute-shell-commands)
   * [Make Tasks Prerequisites of Other Tasks](#make-tasks-prerequisites-of-other-tasks)
+  * [Depend on Values of Environment Variables](#depend-on-values-of-environment-variables)
 - [Examples](#examples)
   * [Transpiling files with Babel](#transpiling-files-with-babel)
+  * [Basic Webapp](#basic-webapp)
 
 ## Why promake?  Why not `jake`, `sake`, etc?
 
@@ -196,7 +198,7 @@ Otherwise, it should resolve to the resource's last modified time, in millisecon
 npm install --save-dev glob
 ```
 
-In your script:
+In your promake script:
 ```js
 const glob = require('glob').sync
 const srcFiles = glob('src/**/*.js')
@@ -276,6 +278,25 @@ task('all', [
 ])
 ```
 
+## Depend on Values of Environment Variables
+
+Use the [`promake-env` package](https://github.com/jcoreio/promake-env):
+```sh
+npm install --save-dev promake-env
+```
+
+```js
+const {rule, exec} = new Promake()
+const envRule = require('promake-env').envRule(rule)
+
+const src = ...
+const lib = ...
+const buildEnv = 'lib/.buildEnv'
+
+envRule(buildEnv, ['NODE_ENV', 'BABEL_ENV'])
+rule(lib, [...src, buildEnv], () => exec('babel src/ --out-dir lib'))
+```
+
 # Examples
 
 ## Transpiling files with Babel
@@ -285,7 +306,7 @@ Install `glob`:
 npm install --save-dev glob
 ```
 
-Create the following make script:
+Create the following promake script:
 ```js
 #!/usr/bin/env node
 
@@ -317,4 +338,77 @@ srcFiles.forEach(srcFile => {
 ```
 However, I don't recommend this because `babel-cli` takes time to start up and this will generally be much slower than
 just recompiling the entire directory in a single `babel` command.
+
+## Basic Webapp
+
+This is an example promake script for a webapp with the following structure:
+
+- `build`
+  * `assets`
+    + `client.bundle.js` (client webpack bundle)
+  * `server` (compiled output of `src/server`)
+  * `universal` (compiled output of `src/universal`)
+- `src`
+  * `client`
+  * `server`
+  * `universal` (code shared by `client` and `server`)
+
+```js
+#!/usr/bin/env node
+
+const Promake = require('promake')
+const glob = require('glob').sync
+const fs = require('fs-extra')
+
+const serverEnv = 'build/.serverEnv'
+const serverSourceFiles = glob('src/server/**/*.js')
+const serverBuildFiles = serverSourceFiles.map(file => file.replace(/^src/, 'build'))
+const serverPrerequistes = [...serverSourceFiles, serverEnv, '.babelrc', ...glob('src/server/**/.babelrc')]
+
+const universalEnv = 'build/.universalEnv'
+const universalSourceFiles = glob('src/universal/**/*.js')
+const universalBuildFiles = universalSourceFiles.map(file => file.replace(/^src/, 'build'))
+const universalPrerequistes = [...universalSourceFiles, universalEnv, '.babelrc', ...glob('src/universal/**/.babelrc')]
+
+const clientEnv = 'build/.clientEnv'
+const clientPrerequisites = [
+  ...universalSourceFiles,
+  ...glob('src/client/**/*.js'),
+  ...glob('src/client/**/*.css'),
+  clientEnv,
+  '.babelrc',
+  ...glob('src/client/**/.babelrc'),
+]
+const clientBuildFiles = [
+  'build/assets/client.bundle.js',
+]
+
+const dockerEnv = 'build/.dockerEnv'
+
+const {rule, task, cli, exec} = new Promake()
+const envRule = require('../../src').envRule(rule)
+
+envRule(serverEnv, ['NODE_ENV', 'BABEL_ENV'])
+envRule(universalEnv, ['NODE_ENV', 'BABEL_ENV'])
+envRule(clientEnv, ['NODE_ENV', 'BABEL_ENV', 'NO_UGLIFY', 'CI'])
+envRule(dockerEnv, ['NPM_TOKEN'])
+
+rule(serverBuildFiles, serverPrerequistes, () => exec('babel src/server/ --out-dir build/server'))
+rule(universalBuildFiles, universalPrerequistes, () => exec('babel src/universal/ --out-dir build/universal'))
+rule(clientBuildFiles, clientPrerequisites, async () => {
+  await fs.mkdirs('build')
+  await exec('webpack --progress --colors')
+})
+
+task('server', [...serverBuildFiles, ...universalBuildFiles]),
+task('client', clientBuildFiles),
+
+task('docker', [task('server'), task('client'), 'Dockerfile', '.dockerignore', dockerEnv], () =>
+  exec(`docker build . --build-arg NPM_TOKEN=${process.env.NPM_TOKEN}`)
+)
+
+task('clean', () => fs.remove('build'))
+
+cli()
+```
 
