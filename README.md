@@ -32,14 +32,20 @@ Promise-based JS make clone that can target anything, not just files
 I wouldn't have introduced a new build tool if I hadn't thought I could significantly improve on what others offer.
 Here is what promake does that others don't:
 
-* It has a promise-based interface, which is much less cumbersome to use on modern JS VMs than callbacks
-* It supports arbitrary resource types as targets and prerequisites.  For instance you could have a rule that only
-builds a given docker image if some files or other docker images have been updated since the last image was created.
-* You tell it to run the CLI in your script, instead of running your script with a CLI.  This means:
-  * You can easily use ES2015 and Coffeescript since you control the script
-  * It doesn't pollute the global namespace with its own methods like `jake` does
-  * It's obvious how to split your rule and task definitions into multiple files
-  * You could even use it in the browser for optimizing various chains of contingent operations
+#### Promise-based interface
+All other JS build tools I've seen have a callback-based API, which is much more cumbersome to use on modern JS VMs
+than promises and `async`/`await`
+
+#### Supports arbitrary resource types as targets and prerequistes
+In addition to files.  For instance you could have a rule that only builds a given docker image if some files or other
+docker images have been updated since the last image was created.
+
+#### No inversion of control container like `jake`, `mocha`, etc.
+You tell it to run the CLI in your script, instead of running your script via a CLI.  This means:
+* You can easily use ES2015 and Coffeescript since you control the script
+* It doesn't pollute the global namespace with its own methods like `jake` does
+* It's obvious how to split your rule and task definitions into multiple files
+* You could even use it in the browser for optimizing various chains of contingent operations
 
 ## Quick start
 
