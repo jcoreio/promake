@@ -156,10 +156,10 @@ Calling `task(name)` without any `prerequisites` or `recipe` looks up and return
 
 ### `exec(command, [options])`
 
-This is a wrapper for `exec` from [`child-process-async`](https://github.com/itsjustcon/node-child-process-async) with
-a bit of extra logic to handle logging.  It has the same
-API as [`child_process`](http://devdocs.io/node/child_process) but the returned `ChildProcess` also has `then` and
-`catch` methods like a `Promise`, so it can be `await`ed.
+This is a wrapper for [`exec` from `child-process-async`](https://github.com/itsjustcon/node-child-process-async#exec)
+with a bit of extra logic to handle logging.  It has the same
+API as [`child_process`](http://devdocs.io/node/child_process#child_process_child_process_exec_command_options_callback)
+but the returned `ChildProcess` also has `then` and `catch` methods like a `Promise`, so it can be `await`ed.
 
 ### `cli(argv = process.argv)`
 
