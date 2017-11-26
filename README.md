@@ -16,6 +16,7 @@ Promise-based JS make clone that can target anything, not just files
   * [`class Promake`](#class-promake)
     + [`rule(targets, prerequisites, recipe)`](#ruletargets-prerequisites-recipe)
     + [`task(name, [prerequisites], [recipe])`](#taskname-prerequisites-recipe)
+    + [`exec(command, [options])`](#execcommand-options)
     + [`cli(argv = process.argv)`](#cliargv--processargv)
   * [The `Resource` interface](#the-resource-interface)
     + [lastModified(): Promise](#lastmodified-promise)
@@ -23,8 +24,8 @@ Promise-based JS make clone that can target anything, not just files
     + [Globbing](#globbing)
     + [File System Operations](#file-system-operations)
     + [Executing shell commands](#executing-shell-commands)
-  * [Examples](#examples)
-    + [Transpiling files with Babel](#transpiling-files-with-babel)andy@Andys-MBP-2:promake (master)
+- [Examples](#examples)
+  * [Transpiling files with Babel](#transpiling-files-with-babel)
 
 ## Why promake?  Why not `jake`, `sake`, etc?
 
@@ -141,9 +142,9 @@ Currently, instances need to define only one method:
 If the resource doesn't exist, returns null or undefined.
 Otherwise, returns the resource's last modified time, in milliseconds.
 
-## How to
+# How to
 
-### Globbing
+## Globbing
 
 `promake` has no built-in globbing; you must pass arrays of files to `rule`s and `task`s.  This is easy with the
 `glob` package:
@@ -159,7 +160,7 @@ const libFiles = srcFiles.map(file => file.replace(/^src/, 'lib'))
 rule(libFiles, srcFiles, () => { /* code that compiles srcFiles to libFiles */ })
 ```
 
-### File System Operations
+## File System Operations
 
 I recommend using [`fs-extra`](https://github.com/jprichardson/node-fs-extra):
 ```sh
@@ -182,7 +183,7 @@ rule(dest, src, async () => {
 })
 ```
 
-### Executing shell commands
+## Executing shell commands
 
 The `Promake` class has an `exec` method, which is really just a wrapper for `require('child-process-async').exec` that
 controls logging.
