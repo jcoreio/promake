@@ -17,11 +17,11 @@ Promise-based JS make clone that can target anything, not just files
     + [`exec(command, [options])`](#execcommand-options)
     + [`cli(argv = process.argv)`](#cliargv--processargv)
   * [The `Resource` interface](#the-resource-interface)
-    + [`lastModified()`](#lastmodified-promise)
+    + [`lastModified()`](#lastmodified-promisenumber)
 - [How to](#how-to)
   * [Glob Files](#glob-files)
   * [Perform File System Operations](#perform-file-system-operations)
-  * [Execute shell commands](#execute-shell-commands)
+  * [Execute Shell Commands](#execute-shell-commands)
   * [Make Tasks Prerequisites of Other Tasks](#make-tasks-prerequisites-of-other-tasks)
 - [Examples](#examples)
   * [Transpiling files with Babel](#transpiling-files-with-babel)
@@ -227,7 +227,7 @@ rule(dest, src, async () => {
 })
 ```
 
-## Execute shell commands
+## Execute Shell Commands
 
 The `Promake` class has an `exec` method, which is really just a wrapper for `require('child-process-async').exec` that
 controls logging.
