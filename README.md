@@ -17,7 +17,7 @@ Promise-based JS make clone that can target anything, not just files
     + [`exec(command, [options])`](#execcommand-options)
     + [`cli(argv = process.argv)`](#cliargv--processargv)
   * [The `Resource` interface](#the-resource-interface)
-    + [lastModified(): Promise](#lastmodified-promise)
+    + [`lastModified()`](#lastmodified-promise)
 - [How to](#how-to)
   * [Glob Files](#glob-files)
   * [Perform File System Operations](#perform-file-system-operations)
