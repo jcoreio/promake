@@ -27,16 +27,17 @@ Promise-based JS make clone that can target anything, not just files
 
 ## Why promake?  Why not `jake`, `sake`, etc?
 
-I wouldn't have introduced a new build tool if I found others satisfactory.  Here is what promake does that others
-don't:
+I wouldn't have introduced a new build tool if I hadn't thought I could significantly improve on what others offer.
+Here is what promake does that others don't:
 
-* It supports arbitrary resources types as targets and prerequisites.  For instance you could have a rule that only
+* It has a promise-based interface, which is much less cumbersome to use on modern JS VMs than callbacks
+* It supports arbitrary resource types as targets and prerequisites.  For instance you could have a rule that only
 builds a given docker image if some files or other docker images have been updated since the last image was created.
-* It has a promise-based interface, which is very clean with `async`/`await` on modern JS VMs
 * You tell it to run the CLI in your script, instead of running your script with a CLI.  This means:
   * You can easily use ES2015 and Coffeescript since you control the script
   * It doesn't pollute the global namespace with its own methods like `jake` does
   * It's obvious how to split your rule and task definitions into multiple files
+  * You could even use it in the browser for optimizing various chains of contingent operations
 
 ## Quick start
 
@@ -61,7 +62,7 @@ task('hello', () => console.log('hello world!'))
 cli()
 ```
 
-Make it executable:
+Make the script executable:
 ```
 > chmod +x promake
 ```
@@ -91,7 +92,7 @@ If there is another rule for a given prerequisite, `promake` will run that rule 
 rule.  If any prerequisite doesn't exist and there is no rule for it, the build will fail.
 
 The `targets` and `prerequisites` can be:
-* a `string` (strings are always interpreted as file names)
+* a `string` (strings are always interpreted as file system paths relative to the working directory)
 * an object conforming to [the `Resource` interface](#the-resource-interface)
 * or an array of the above
 
@@ -138,7 +139,8 @@ Otherwise, returns the resource's last modified time, in milliseconds.
 
 ### Globbing
 
-Globbing is not built into `promake` because you can just install and use the `glob` package instead:
+`promake` has no built-in globbing; you must pass arrays of files to `rule`s and `task`s.  This is easy with the
+`glob` package:
 ```sh
 npm install --save-dev glob
 ```
@@ -147,24 +149,48 @@ In your script:
 ```js
 const glob = require('glob').sync
 const srcFiles = glob('src/**/*.js')
+const libFiles = srcFiles.map(file => file.replace(/^src/, 'lib'))
+rule(libFiles, srcFiles, () => { /* code that compiles srcFiles to libFiles */ })
+```
+
+### File System Operations
+
+I recommend using [`fs-extra`](https://github.com/jprichardson/node-fs-extra):
+```sh
+npm install --save-dev fs-extra
+```
+
+To perform a single operation in a task, you can just return the `Promise` from async `fs-extra` operations:
+```js
+const fs = require('fs-extra')
+rule(dest, src, () => fs.copy(src, dest))
+```
+
+To perform multiple operations one after another, you can use an async lambda and `await` each operation:
+```js
+const path = require('path')
+const fs = require('fs-extra')
+rule(dest, src, async () => {
+  await fs.mkdirs(path.dirname(dest)))
+  await fs.copy(src, dest))
+})
 ```
 
 ### Executing shell commands
 
-I recommend using the `child-process-async` package:
-```sh
-npm install --save-dev child-process-async
+The `Promake` class has an `exec` method, which is really just a wrapper for `require('child-process-async').exec` that
+controls logging.
+```js
+const {rule, exec} = new Promake()
 ```
 
 To run a single command in a task, you can just return the result of `exec` because it is Promise-like:
 ```js
-const {exec} = require('child-process-async')
 rule(dest, src, () => exec(`cp ${src} ${dest}`))
 ```
 
 To run multiple commands, you can use an async lambda and `await` each `exec` call:
 ```js
-const {exec} = require('child-process-async')
 rule(dest, src, async () => {
   await exec(`cp ${src} ${dest}`)
   await exec(`git add ${dest}`)
@@ -176,9 +202,9 @@ rule(dest, src, async () => {
 
 ### Transpiling files with Babel
 
-Install `glob` and `child-process-async`:
+Install `glob`:
 ```sh
-npm install --save-dev glob child-process-async
+npm install --save-dev glob
 ```
 
 Create the following make script:
@@ -187,13 +213,12 @@ Create the following make script:
 
 const Promake = require('promake')
 const glob = require('glob').sync
-const {exec} = require('child-process-async'
 
 const srcFiles = glob('src/**/*.js')
 const libFiles = srcFiles.map(file => file.replace(/^src/, 'lib'))
 const libPrerequisites = [...srcFiles, '.babelrc', ...glob('src/**/.babelrc')]
 
-const {rule, task, cli} = new Promake()
+const {rule, task, exec, cli} = new Promake()
 rule(libFiles, libPrerequisites, () => exec(`babel src/ --out-dir lib`))
 task('build', libFiles)
 

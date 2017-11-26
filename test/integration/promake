@@ -1,0 +1,42 @@
+#!/usr/bin/env babel-node
+// @flow
+
+const Promake = require('../../src').default
+const glob = require('glob').sync
+const fs = require('fs-extra')
+
+const serverSourceFiles = glob('src/server/**/*.js')
+const serverBuildFiles = serverSourceFiles.map(file => file.replace(/^src/, 'build'))
+const serverPrerequistes = [...serverSourceFiles, '.babelrc', ...glob('src/server/**/.babelrc')]
+
+const universalSourceFiles = glob('src/universal/**/*.js')
+const universalBuildFiles = universalSourceFiles.map(file => file.replace(/^src/, 'build'))
+const universalPrerequistes = [...universalSourceFiles, '.babelrc', ...glob('src/universal/**/.babelrc')]
+
+const clientPrerequisites = [
+  ...universalSourceFiles,
+  ...glob('src/client/**/*.js'),
+  ...glob('src/client/**/*.css'),
+  '.babelrc',
+  ...glob('src/client/**/.babelrc'),
+]
+const clientBuildFiles = [
+  'build/assets/client.bundle.js',
+]
+
+const {rule, task, cli, exec} = new Promake()
+
+rule(serverBuildFiles, serverPrerequistes, () => exec('babel src/server/ --out-dir build/server'))
+rule(universalBuildFiles, universalPrerequistes, () => exec('babel src/universal/ --out-dir build/universal'))
+rule(clientBuildFiles, clientPrerequisites, async () => {
+  await fs.mkdirs('build')
+  await exec('webpack --progress --colors')
+})
+
+task('server', [...serverBuildFiles, ...universalBuildFiles])
+task('client', clientBuildFiles)
+
+task('clean', () => fs.remove('build'))
+
+cli()
+

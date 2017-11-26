@@ -1,4 +1,8 @@
 {
+  "env": {
+    "node": true,
+    "commonjs": true
+  },
   "extends": [
     "@jedwards1211/eslint-config", "@jedwards1211/eslint-config-flow"
   ]
