@@ -386,7 +386,7 @@ const clientBuildFiles = [
 const dockerEnv = 'build/.dockerEnv'
 
 const {rule, task, cli, exec} = new Promake()
-const envRule = require('../../src').envRule(rule)
+const envRule = require('promake-env').envRule(rule)
 
 envRule(serverEnv, ['NODE_ENV', 'BABEL_ENV'])
 envRule(universalEnv, ['NODE_ENV', 'BABEL_ENV'])
