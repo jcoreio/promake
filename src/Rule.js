@@ -1,7 +1,8 @@
 // @flow
 
-import Promake, {VERBOSITY_DEFAULT} from './Promake'
+import type Promake from './Promake'
 import type {Resource} from './Resource'
+import Verbosity from './Verbosity'
 
 type Props = {
   promake: Promake,
@@ -36,12 +37,12 @@ class Rule {
       const minTargetTime = Math.min(...finiteTargetTimes)
       const maxPrerequisiteTime = Math.max(...finitePrerequisiteTimes)
       if (!prerequisites.length || minTargetTime > maxPrerequisiteTime) {
-        promake._log(VERBOSITY_DEFAULT, 'Nothing to be done for', this)
+        promake._log(Verbosity.DEFAULT, 'Nothing to be done for', this)
         return
       }
     }
     if (recipe) {
-      promake._log(VERBOSITY_DEFAULT, 'Making', this)
+      promake._log(Verbosity.DEFAULT, 'Making', this)
       await recipe()
     }
     this.lastFinishTime = Date.now()

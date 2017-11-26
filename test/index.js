@@ -14,6 +14,11 @@ import TestResource from './TestResource'
 
 describe('Promake', () => {
   describe('.task', () => {
+    it('throws when another task for the given name already exists', () => {
+      const {task} = new Promake()
+      task('foo', () => {})
+      expect(() => task('foo', () => {})).to.throw(Error)
+    })
     describe('with no prerequisites or recipe', () => {
       it('returns Rule for a task', () => {
         const {task} = new Promake()
@@ -47,6 +52,11 @@ describe('Promake', () => {
       expect(() => rule('hello', 2, () => {})).to.throw(RuntimeError)
       expect(() => rule('hello', [2], () => {})).to.throw(RuntimeError)
       expect(() => rule('hello', [() => {}], () => {})).to.throw(RuntimeError)
+    })
+    it ('throws when a rule for a given target already exists', () => {
+      const {rule} = new Promake()
+      rule('foo', () => {})
+      expect(() => rule('foo', () => {})).to.throw(Error)
     })
     describe('with no prerequisites or receipe', () => {
       it('returns Rule for a target', () => {
@@ -168,7 +178,7 @@ describe('Promake', () => {
       })
     })
   })
-  describe('.task + .cli', () => {
+  describe('.cli', () => {
     it('runs prerequisites that are missing', async () => {
       const {rule, task, cli} = new Promake()
 
@@ -189,6 +199,26 @@ describe('Promake', () => {
       expect(baz.mtime).to.be.greaterThan(foo.mtime)
       expect(baz.mtime).to.be.greaterThan(bar.mtime)
     })
+    it('increases verbosity when called with -v', async () => {
+      const promake = new Promake()
+
+      await promake.cli(['node', 'promake.js', '-v'], {exit: false})
+      expect(promake.verbosity).to.equal(Promake.VERBOSITY.HIGH)
+    })
+    it('increases verbosity when called with --verbose', async () => {
+      const promake = new Promake()
+
+      await promake.cli(['node', 'promake.js', '--verbose'], {exit: false})
+      expect(promake.verbosity).to.equal(Promake.VERBOSITY.HIGH)
+    })
+    it('rejects when called with invalid target', async () => {
+      const {cli} = new Promake()
+
+      let error: ?Error
+      await cli(['node', 'promake.js', 'blah'], {exit: false}).catch(err => error = err)
+
+      expect(error).to.be.an.instanceOf(Error)
+    })
   })
   describe('integration test', function () {
     this.timeout(15 * 60000)
@@ -196,6 +226,15 @@ describe('Promake', () => {
     it('cleans', async () => {
       await exec('babel-node promake clean', {cwd})
       expect(await fs.pathExists('test/integration/promake/build')).to.be.false
+    })
+    it('throws an error when run with an invalid target', async () => {
+      let stderr = ''
+      const child = exec('babel-node promake clean glab', {cwd})
+      child.stderr.on('data', chunk => stderr += chunk.toString('utf8'))
+      let code
+      await child.catch(error => code = error.code)
+      expect(code).to.equal(1)
+      expect(stderr).to.match(/Error: no task or file found for glab/)
     })
     it('builds after clean', async () => {
       await exec('babel-node promake clean build', {cwd})
@@ -210,6 +249,16 @@ describe('Promake', () => {
       const {stderr} = await exec('babel-node promake build', {cwd})
       expect(stderr).not.to.match(/making/i)
       expect(stderr).to.match(/nothing to be done/i)
+    })
+    it("outputs nothing when run with -q", async () => {
+      const {stdout, stderr} = await exec('babel-node promake build -q', {cwd})
+      expect(stdout).to.match(/^\s*$/m)
+      expect(stderr).to.match(/^\s*$/m)
+    })
+    it("outputs nothing when run with --quiet", async () => {
+      const {stdout, stderr} = await exec('babel-node promake build --quiet', {cwd})
+      expect(stdout).to.match(/^\s*$/m)
+      expect(stderr).to.match(/^\s*$/m)
     })
   })
 })
