@@ -102,7 +102,7 @@ the `recipe`.
 If there is another rule for a given prerequisite, `promake` will run that rule first before running the recipe for this
 rule.  If any prerequisite doesn't exist and there is no rule for it, the build will fail.
 
-##### `target` and `prerequisites`
+##### `target` (required) and `prerequisites` (optional)
 These can be:
 * a `string` (strings are always interpreted as file system paths relative to the working directory)
 * an object conforming to [the `Resource` interface](#the-resource-interface)
@@ -112,12 +112,12 @@ These can be:
 **Warning**: glob patterns (e.g. `src/**/*.js`) in `targets` or `prerequisites` will not be expanded; instead you must
 glob yourself and pass in the array of matching files.  See [Glob Files](#glob-files) for an example of how to do so.
 
-##### `recipe`
+##### `recipe` (optional)
 A function that should ensure that `targets` get created or updated.  If it returns a `Promise`,
 `promake` will wait for it to resolve before moving on to the next rule or task.  If the `recipe` throws an Error or
 returns a `Promise` that rejects, the build will fail.
 
-##### `options`
+##### `options` (optional)
 * `runAtLeastOnce` - if true, the `recipe` will be run at least once, even if the `targets` are apparently up-to-date.
   This is useful for rules that need to look at the contents of targets to decide whether to update them.
 
@@ -137,7 +137,7 @@ Task names take precedence over file names when specifying what to build in CLI 
 ##### `name`
 The name of the task
 
-##### `prerequisites`
+##### `prerequisites` (optional)
 These take the same form as for a `rule`, and if given, `promake` will ensure that they exist and are
 up-to-date before the task is running, running any rules applicable to the `prerequisites` as necessary.
 
@@ -145,7 +145,7 @@ up-to-date before the task is running, running any rules applicable to the `prer
 `prerequisites` are interpreted as files.  See
 [Make Tasks Prerequisites of Other Tasks](#make-tasks-prerequisites-of-other-tasks) for more details.
 
-##### `recipe`
+##### `recipe` (optional)
 If given, it will be run any time the task is requested, even if the `prerequisites` are up-to-date.
 
 #### Returns
@@ -161,17 +161,24 @@ with a bit of extra logic to handle logging.  It has the same
 API as [`child_process`](http://devdocs.io/node/child_process#child_process_child_process_exec_command_options_callback)
 but the returned `ChildProcess` also has `then` and `catch` methods like a `Promise`, so it can be `await`ed.
 
-### `cli(argv = process.argv)`
+### `cli(argv = process.argv, [options])`
+Runs the command-line interface for the given arguments.
+Unless `options.exit === false`, after running all requested tasks and file rules, it will exit the process with a code
+of 0 if the build succeeded, and nonzero if the build failed.
 
-Runs the command-line interface for the given arguments.  The arguments may include:
-* Task names -- these tasks will be run, in the order requested
-* File names -- rules for these files will be run, in the order requested
-
-#### Options
+##### `argv`
+The command-line arguments.  May include:
+* Task names - these tasks will be run, in the order requested
+* File names - rules for these files will be run, in the order requested
 * `--quiet`, `-q`: suppress output
 
-After running all requested tasks and file rules, it will exit the process with a code of 0 if the build succeeded, and
-nonzero if the build failed.
+##### `options` (optional)
+An object that may have the following properties:
+* `exit` - unless this is `false`, `cli()` will exit once it has finished running the requested tasks and file rules.
+
+#### Returns
+A `Promise` that will resolve when `Promake` finishes running the requested tasks and file rules, or throw if it fails
+(but this is only useful if `options.exit === false` to prevent `cli()` from calling `process.exit` when it's done).
 
 ## The `Resource` interface
 
