@@ -111,6 +111,11 @@ up-to-date before the task is running, running any rules applicable to the `prer
 
 If `recipe` is given, it will be run any time the task is requested, even if the `prerequisites` are up-to-date.
 
+### `exec(command, [options])`
+
+This is a wrapper for `exec` from `child-process-async` that controls logging.  It has the same API as `child_process`
+but the returned `ChildProcess` also has `then` and `catch` methods.
+
 ### `cli(argv = process.argv)`
 
 Runs the command-line interface for the given arguments.  The arguments may include:
@@ -199,9 +204,9 @@ rule(dest, src, async () => {
 })
 ```
 
-## Examples
+# Examples
 
-### Transpiling files with Babel
+## Transpiling files with Babel
 
 Install `glob`:
 ```sh
