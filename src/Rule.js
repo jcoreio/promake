@@ -8,6 +8,7 @@ type Props = {
   targets: Array<Resource>,
   prerequisites: Array<Resource>,
   recipe: ?(() => ?Promise<any>),
+  runAtLeastOnce?: boolean,
 }
 
 class Rule {
@@ -15,6 +16,7 @@ class Rule {
   targets: Array<Resource>
   prerequisites: Array<Resource>
   recipe: ?(() => ?Promise<any>)
+  runAtLeastOnce: boolean = false
 
   lastFinishTime: ?number
   promise: ?Promise<any>
@@ -24,22 +26,22 @@ class Rule {
   }
 
   _make = async (): Promise<any> => {
-    const targetTimes = await Promise.all(this.targets.map(target => target.lastModified()))
+    const {targets, promake, prerequisites, recipe} = this
+    const targetTimes = await Promise.all(targets.map(target => target.lastModified()))
     const prerequisiteTimes = []
-    for (let prerequisite of this.prerequisites) prerequisiteTimes.push(await this.promake._make(prerequisite))
+    for (let prerequisite of prerequisites) prerequisiteTimes.push(await promake._make(prerequisite))
     const finiteTargetTimes: Array<number> = (targetTimes.filter(Number.isFinite): any)
-    if (finiteTargetTimes.length === targetTimes.length) {
+    if (finiteTargetTimes.length === targetTimes.length && !this.runAtLeastOnce) {
       const finitePrerequisiteTimes: Array<number> = (prerequisiteTimes.filter(Number.isFinite): any)
       const minTargetTime = Math.min(...finiteTargetTimes)
       const maxPrerequisiteTime = Math.max(...finitePrerequisiteTimes)
-      if (minTargetTime > maxPrerequisiteTime) {
-        this.promake._log(VERBOSITY_DEFAULT, 'Nothing to be done for', this)
+      if (!prerequisites.length || minTargetTime > maxPrerequisiteTime) {
+        promake._log(VERBOSITY_DEFAULT, 'Nothing to be done for', this)
         return
       }
     }
-    const {recipe} = this
     if (recipe) {
-      this.promake._log(VERBOSITY_DEFAULT, 'Making', this)
+      promake._log(VERBOSITY_DEFAULT, 'Making', this)
       await recipe()
     }
     this.lastFinishTime = Date.now()

@@ -23,7 +23,7 @@ describe('Promake', () => {
 
         const barTime = await bar.touch()
 
-        rule(foo, [], () => foo.touch())
+        rule(foo, () => foo.touch())
         await rule(baz, [foo, bar], () => baz.touch())
 
         expect(bar.mtime).to.equal(barTime)
@@ -43,10 +43,22 @@ describe('Promake', () => {
         const bazTime = await baz.lastModified()
         expect(bazTime).to.exist
 
-        rule(foo, [], () => foo.touch())
+        rule(foo, () => foo.touch())
         await rule(baz, [foo, bar], () => baz.touch())
 
         expect(await baz.lastModified()).to.equal(bazTime)
+      })
+      it("respects runAtLeastOnce", async () => {
+        const {rule} = new Promake()
+        const foo = new TestResource('foo')
+
+        await foo.touch()
+        const fooTime = await foo.lastModified()
+        expect(fooTime).to.exist
+
+        await rule(foo, () => foo.touch(), {runAtLeastOnce: true})
+
+        expect(await foo.lastModified()).to.be.greaterThan(fooTime)
       })
       it("doesn't rerun rule when called again", async () => {
         const {rule} = new Promake()
@@ -56,7 +68,7 @@ describe('Promake', () => {
 
         await bar.touch()
 
-        rule(foo, [], () => foo.touch())
+        rule(foo, () => foo.touch())
         const bazRule = rule(baz, [foo, bar], () => baz.touch())
         await bazRule
         const bazTime = await baz.lastModified()
@@ -78,7 +90,7 @@ describe('Promake', () => {
         const bazTime = await baz.lastModified()
         expect(bazTime).to.exist
 
-        rule(foo, [], () => foo.touch())
+        rule(foo, () => foo.touch())
         await rule(baz, [foo, bar], () => baz.touch())
 
         expect(await baz.lastModified()).to.be.greaterThan(bazTime)
@@ -93,7 +105,7 @@ describe('Promake', () => {
         const onResolved = sinon.spy()
         const onRejected = sinon.spy()
 
-        rule(foo, [], () => foo.touch())
+        rule(foo, () => foo.touch())
         await rule(baz, [foo, bar], () => baz.touch()).then(onResolved, onRejected)
 
         expect(onResolved.called).to.be.false
@@ -111,7 +123,7 @@ describe('Promake', () => {
 
       const barTime = await bar.touch()
 
-      rule(foo, [], () => foo.touch())
+      rule(foo, () => foo.touch())
       rule(baz, [foo, bar], () => baz.touch())
       task('makeBaz', baz)
 

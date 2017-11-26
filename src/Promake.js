@@ -78,12 +78,18 @@ class Promake {
     return child
   }
 
-  rule = (targets: Resources, prerequisites: ?Resources, recipe: () => ?Promise<any>): Rule => {
+  rule = (targets: Resources, prerequisites: ?Resources, recipe: () => ?Promise<any>, options?: {runAtLeastOnce?: boolean}): Rule => {
+    if (typeof prerequisites === 'function') {
+      options = (recipe: any)
+      recipe = (prerequisites: any)
+      prerequisites = null
+    }
     const rule = new Rule({
       promake: this,
       targets: this._normalizeResources(targets),
       prerequisites: prerequisites ? this._normalizeResources(prerequisites) : [],
       recipe,
+      runAtLeastOnce: Boolean(options && options.runAtLeastOnce),
     })
     for (let target of rule.targets) this.rules.set(target, rule)
     return rule

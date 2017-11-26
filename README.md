@@ -90,7 +90,7 @@ problems.
 
 `const Promake = require('promake')`
 
-### `rule(targets, prerequisites, recipe)`
+### `rule(targets, [prerequisites], recipe, [options])`
 Creates a rule that indicates that `targets` can be created from `prerequisites` by running the given `recipe`.
 If all `targets` exist and are newer than all `prerequisites`, `promake` will assume they are up-to-date and skip
 the `recipe`.
@@ -106,6 +106,10 @@ The `targets` and `prerequisites` can be:
 The `recipe` is a function that should ensure that `targets` get created or updated.  If it returns a `Promise`,
 `promake` will wait for it to resolve before moving on to the next rule or task.  If the `recipe` throws an Error or
 returns a `Promise` that rejects, the build will fail.
+
+#### `options`
+* `runAtLeastOnce` - if true, the `recipe` will be run at least once, even if the `targets` are apparently up-to-date.
+  This is useful for rules that need to look at the contents of targets to decide whether to update them.
 
 ### `task(name, [prerequisites], [recipe])`
 
