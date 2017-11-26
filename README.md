@@ -348,10 +348,18 @@ This is an example promake script for a webapp with the following structure:
     + `client.bundle.js` (client webpack bundle)
   * `server/` (compiled output of `src/server`)
   * `universal/` (compiled output of `src/universal`)
+  * `.clientEnv` (environment variables for last client build)
+  * `.dockerEnv` (environment variables for last docker build)
+  * `.serverEnv` (environment variables for last server build)
+  * `.universalEnv` (environment variables for last universal build)
 - `src/`
   * `client/`
   * `server/`
   * `universal/` (code shared by `client` and `server`)
+- `.babelrc`
+- `.dockerignore`
+- `Dockerfile`
+- `webpack.config.js`
 
 ```js
 #!/usr/bin/env node
