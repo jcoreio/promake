@@ -124,7 +124,7 @@ describe('Promake', () => {
     })
   })
   describe('integration test', function () {
-    this.timeout(60000)
+    this.timeout(15 * 60000)
     const cwd = path.resolve(__dirname, 'integration')
     it('cleans', async () => {
       await exec('babel-node promake clean', {cwd})
