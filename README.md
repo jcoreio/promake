@@ -8,22 +8,23 @@
 Promise-based JS make clone that can target anything, not just files
 
 - [promake](#promake)
-  * [Why promake? Why not `jake`, `sake`, etc?](#why-promake-why-not-jake-sake-etc)
+  * [Why promake? Why not `jake`, `sake`, etc?](#why-promake--why-not-jake-sake-etc)
   * [Quick start](#quick-start)
     + [Install promake](#install-promake)
     + [A minimal make script](#a-minimal-make-script)
 - [API Reference](#api-reference)
   * [`class Promake`](#class-promake)
-    + [`rule(targets, prerequisites, recipe)`](#rule-targets-prerequisites-recipe)
-    + [`task(name, [prerequisites], [recipe])`](#task-name-prerequisites-recipe)
-    + [`cli(argv = process.argv)`](#cli-argv--process-argv)
+    + [`rule(targets, prerequisites, recipe)`](#ruletargets-prerequisites-recipe)
+    + [`task(name, [prerequisites], [recipe])`](#taskname-prerequisites-recipe)
+    + [`cli(argv = process.argv)`](#cliargv--processargv)
   * [The `Resource` interface](#the-resource-interface)
     + [lastModified(): Promise](#lastmodified-promise)
   * [How to](#how-to)
     + [Globbing](#globbing)
+    + [File System Operations](#file-system-operations)
     + [Executing shell commands](#executing-shell-commands)
   * [Examples](#examples)
-    + [Transpiling files with Babel](#transpiling-files-with-babel)
+    + [Transpiling files with Babel](#transpiling-files-with-babel)andy@Andys-MBP-2:promake (master)
 
 ## Why promake?  Why not `jake`, `sake`, etc?
 
