@@ -343,15 +343,15 @@ just recompiling the entire directory in a single `babel` command.
 
 This is an example promake script for a webapp with the following structure:
 
-- `build`
-  * `assets`
+- `build/`
+  * `assets/`
     + `client.bundle.js` (client webpack bundle)
-  * `server` (compiled output of `src/server`)
-  * `universal` (compiled output of `src/universal`)
-- `src`
-  * `client`
-  * `server`
-  * `universal` (code shared by `client` and `server`)
+  * `server/` (compiled output of `src/server`)
+  * `universal/` (compiled output of `src/universal`)
+- `src/`
+  * `client/`
+  * `server/`
+  * `universal/` (code shared by `client` and `server`)
 
 ```js
 #!/usr/bin/env node
