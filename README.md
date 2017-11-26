@@ -15,7 +15,7 @@ Promise-based JS make clone that can target anything, not just files
     + [`rule(targets, prerequisites, recipe)`](#ruletargets-prerequisites-recipe)
     + [`task(name, [prerequisites], [recipe])`](#taskname-prerequisites-recipe)
     + [`exec(command, [options])`](#execcommand-options)
-    + [`cli(argv = process.argv)`](#cliargv--processargv)
+    + [`cli(argv = process.argv, [options])`](#cliargv--processargv-options)
   * [The `Resource` interface](#the-resource-interface)
     + [`lastModified()`](#lastmodified-promisenumber)
 - [How to](#how-to)
