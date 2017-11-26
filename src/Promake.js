@@ -134,7 +134,7 @@ export default class Promake {
       if (options.exit !== false) process.exit(0)
     } catch (error) {
       if (options.exit !== false) {
-        console.error(error.stack) // eslint-disable-line no-console
+        this._log(VERBOSITY_DEFAULT, error.stack)
         process.exit(1)
       }
       throw error
