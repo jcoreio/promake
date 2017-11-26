@@ -4,9 +4,9 @@
   "description": "Promise-based JS make clone that can target anything, not just files",
   "main": "lib/index.js",
   "scripts": {
-    "lint": "eslint src test",
-    "lint:fix": "eslint --fix src test",
-    "lint:watch": "esw --watch src test",
+    "lint": "eslint src test/*.js",
+    "lint:fix": "eslint --fix src test/*.js",
+    "lint:watch": "esw --watch src test/*.js",
     "flow": "flow",
     "flow:coverage": "for file in src/**.js test/**.js; do echo $file; flow coverage $file; done",
     "flow:watch": "flow-watch -e js,js.flow,flowconfig --ignore lib/ --ignore node_modules/ --watch .flowconfig --watch src/ --watch test/",
@@ -81,7 +81,7 @@
     "mocha": "^3.2.0",
     "nyc": "^10.1.2",
     "rimraf": "^2.6.0",
-    "semantic-release": "^6.3.6",
+    "semantic-release": "^8.2.0",
     "sinon": "^4.1.2",
     "validate-commit-msg": "^2.11.1",
     "webpack": "^3.8.1"
