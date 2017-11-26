@@ -10,8 +10,6 @@ Promise-based JS make clone that can target anything, not just files
 - [promake](#promake)
   * [Why promake? Why not `jake`, `sake`, etc?](#why-promake--why-not-jake-sake-etc)
   * [Quick start](#quick-start)
-    + [Install promake](#install-promake)
-    + [A minimal make script](#a-minimal-make-script)
 - [API Reference](#api-reference)
   * [`class Promake`](#class-promake)
     + [`rule(targets, prerequisites, recipe)`](#ruletargets-prerequisites-recipe)
