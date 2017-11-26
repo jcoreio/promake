@@ -166,7 +166,7 @@ Runs the command-line interface for the given arguments.
 Unless `options.exit === false`, after running all requested tasks and file rules, it will exit the process with a code
 of 0 if the build succeeded, and nonzero if the build failed.
 
-##### `argv`
+##### `argv` (optional, default: `process.argv`)
 The command-line arguments.  May include:
 * Task names - these tasks will be run, in the order requested
 * File names - rules for these files will be run, in the order requested
