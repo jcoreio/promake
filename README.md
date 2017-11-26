@@ -119,14 +119,18 @@ If `recipe` is given, it will be run any time the task is requested, even if the
 
 ### `exec(command, [options])`
 
-This is a wrapper for `exec` from `child-process-async` that controls logging.  It has the same API as `child_process`
-but the returned `ChildProcess` also has `then` and `catch` methods.
+This is a wrapper for `exec` from `child-process-async` with a bit of extra logic to handle logging.  It has the same
+API as `child_process` but the returned `ChildProcess` also has `then` and `catch` methods like a `Promise`, so it can
+be `await`ed.
 
 ### `cli(argv = process.argv)`
 
 Runs the command-line interface for the given arguments.  The arguments may include:
 * Task names -- these tasks will be run, in the order requested
 * File names -- rules for these files will be run, in the order requested
+
+#### Options
+* `--quiet`, `-q`: suppress output
 
 After running all requested tasks and file rules, it will exit the process with a code of 0 if the build succeeded, and
 nonzero if the build failed.
