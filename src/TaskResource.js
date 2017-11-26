@@ -8,7 +8,7 @@ type Props = {
   promake: Promake,
 }
 
-export default class TaskResource implements Resource {
+class TaskResource implements Resource {
   name: string
   promake: Promake
 
@@ -26,3 +26,6 @@ export default class TaskResource implements Resource {
     return this.name
   }
 }
+
+module.exports = TaskResource
+

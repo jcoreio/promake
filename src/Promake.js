@@ -21,7 +21,7 @@ export const VERBOSITY_HIGH = 2
 
 type Verbosity = 0 | 1 | 2
 
-export default class Promake {
+class Promake {
   fileResources: Map<string, FileResource> = new Map()
   taskResources: Map<string, TaskResource> = new Map()
   rules: Map<Resource, Rule> = new Map()
@@ -141,4 +141,7 @@ export default class Promake {
     }
   }
 }
+
+// $FlowFixMe
+module.exports = Promake
 

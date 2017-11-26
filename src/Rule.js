@@ -10,7 +10,7 @@ type Props = {
   recipe: ?(() => ?Promise<any>),
 }
 
-export default class Rule {
+class Rule {
   promake: Promake
   targets: Array<Resource>
   prerequisites: Array<Resource>
@@ -64,4 +64,6 @@ export default class Rule {
     return this.toString()
   }
 }
+
+module.exports = Rule
 

@@ -6,7 +6,7 @@ import promisify from 'es6-promisify'
 
 const stat = promisify(fs.stat)
 
-export default class FileResource implements Resource {
+class FileResource implements Resource {
   file: string;
 
   constructor(file: string) {
@@ -27,4 +27,6 @@ export default class FileResource implements Resource {
     return this.file
   }
 }
+
+module.exports = FileResource
 
