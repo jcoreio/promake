@@ -12,6 +12,7 @@ import chalk from 'chalk'
 import type {ChildProcess} from 'child_process'
 import Verbosity from './Verbosity'
 import type {VerbosityLevel} from './Verbosity'
+import type {Readable} from 'stream'
 
 type Resources = Array<string | Resource> | string | Resource
 
@@ -81,8 +82,12 @@ class Promake {
     return resource.lastModified()
   }
 
-  _log = (verbosity: VerbosityLevel, ...args: any) => {
+  log = (verbosity: VerbosityLevel, ...args: any) => {
     if (this.verbosity >= verbosity) console.error(...args) // eslint-disable-line no-console
+  }
+
+  logStream = (verbosity: VerbosityLevel, stream: Readable) => {
+    if (this.verbosity >= verbosity) stream.pipe(process.stderr)
   }
 
   _logChildProcess = (child: ChildProcess) => {
@@ -93,12 +98,12 @@ class Promake {
 
   exec = (command: string, options?: child_process$execOpts = {}): ChildProcess => {
     const child = exec(command, options)
-    this._log(Verbosity.DEFAULT, chalk.gray('$'), chalk.gray(command))
+    this.log(Verbosity.DEFAULT, chalk.gray('$'), chalk.gray(command))
     this._logChildProcess(child)
     return child
   }
 
-  rule = (targets: Targets, prerequisites?: any, recipe?: () => ?Promise<any>, options?: {runAtLeastOnce?: boolean}): Rule => {
+  rule = (targets: Targets, prerequisites?: any, recipe?: (rule: Rule) => ?Promise<any>, options?: {runAtLeastOnce?: boolean}): Rule => {
     if (typeof prerequisites === 'function') {
       options = (recipe: any)
       recipe = (prerequisites: any)
@@ -125,7 +130,7 @@ class Promake {
     return rule
   }
 
-  task = (name: string, prerequisites: any, recipe?: () => ?Promise<any>): Rule => {
+  task = (name: string, prerequisites: any, recipe?: (rule: Rule) => ?Promise<any>): Rule => {
     if (prerequisites instanceof Function) {
       recipe = (prerequisites: any)
       prerequisites = null
@@ -176,7 +181,7 @@ class Promake {
       if (options.exit !== false) process.exit(0)
     } catch (error) {
       if (options.exit !== false) {
-        this._log(Verbosity.DEFAULT, error.stack)
+        this.log(Verbosity.DEFAULT, error.stack)
         process.exit(1)
       }
       throw error

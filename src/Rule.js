@@ -9,7 +9,7 @@ type Props = {
   promake: Promake,
   targets: Array<Resource>,
   prerequisites: Array<Resource>,
-  recipe: ?(() => ?Promise<any>),
+  recipe: ?((rule: Rule) => ?Promise<any>),
   runAtLeastOnce?: boolean,
 }
 
@@ -17,7 +17,7 @@ class Rule {
   promake: Promake
   targets: Array<Resource>
   prerequisites: Array<Resource>
-  recipe: ?(() => ?Promise<any>)
+  recipe: ?((rule: Rule) => ?Promise<any>)
   runAtLeastOnce: boolean = false
 
   lastFinishTime: ?number
@@ -32,7 +32,7 @@ class Rule {
     const targetTimes = await Promise.all(targets.map(target => target.lastModified()))
     const prerequisiteTimes = []
     if (targets.length === 1 && targets[0] instanceof TaskResource && !recipe) {
-      promake._log(Verbosity.DEFAULT, 'Making', this)
+      promake.log(Verbosity.DEFAULT, 'Making', this)
     }
     for (let prerequisite of prerequisites) prerequisiteTimes.push(await promake._make(prerequisite))
     const finiteTargetTimes: Array<number> = (targetTimes.filter(Number.isFinite): any)
@@ -41,13 +41,13 @@ class Rule {
       const minTargetTime = Math.min(...finiteTargetTimes)
       const maxPrerequisiteTime = Math.max(...finitePrerequisiteTimes)
       if (!prerequisites.length || minTargetTime > maxPrerequisiteTime) {
-        promake._log(Verbosity.DEFAULT, 'Nothing to be done for', this)
+        promake.log(Verbosity.DEFAULT, 'Nothing to be done for', this)
         return
       }
     }
     if (recipe) {
-      promake._log(Verbosity.DEFAULT, 'Making', this)
-      await recipe()
+      promake.log(Verbosity.DEFAULT, 'Making', this)
+      await recipe(this)
     }
     this.lastFinishTime = Date.now()
   }

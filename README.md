@@ -16,6 +16,15 @@ Promise-based JS make clone that can target anything, not just files
     + [`task(name, [prerequisites], [recipe])`](#taskname-prerequisites-recipe)
     + [`exec(command, [options])`](#execcommand-options)
     + [`cli(argv = process.argv, [options])`](#cliargv--processargv-options)
+    + [`log(verbosity, ...args)`](#logverbosity-args)
+    + [`logStream(verbosity, stream)`](#logstreamverbosity-stream)
+    + [`static Verbosity`](#static-verbosity)
+  * [`class Rule`](#class-rule)
+    + [`promake`](#promake-2)
+    + [`targets`](#targets)
+    + [`prerequisites`](#prerequisites)
+    + [`then(onResolved, [onRejected])`](#thenonresolved-onrejected)
+    + [`catch(onRejected)`](#catchonrejected)
   * [The `Resource` interface](#the-resource-interface)
     + [`lastModified()`](#lastmodified-promisenumber)
 - [How to](#how-to)
@@ -113,7 +122,10 @@ These can be:
 glob yourself and pass in the array of matching files.  See [Glob Files](#glob-files) for an example of how to do so.
 
 ##### `recipe` (optional)
-A function that should ensure that `targets` get created or updated.  If it returns a `Promise`,
+A function that should ensure that `targets` get created or updated.  It will be called with one argument: the
+[`Rule`](#class-rule) being run.
+
+If `recipe` returns a `Promise`,
 `promake` will wait for it to resolve before moving on to the next rule or task.  If the `recipe` throws an Error or
 returns a `Promise` that rejects, the build will fail.
 
@@ -122,7 +134,7 @@ returns a `Promise` that rejects, the build will fail.
   This is useful for rules that need to look at the contents of targets to decide whether to update them.
 
 #### Returns
-The created `Rule`.
+The created [`Rule`](#class Rule).
 
 You can get the `Rule` for a given target by calling `rule(target)` (without `prerequisites` or `recipe`), but it will
 throw and `Error` if no such `Rule` exists, or you call it with multiple targets.
@@ -147,9 +159,14 @@ up-to-date before the task is running, running any rules applicable to the `prer
 
 ##### `recipe` (optional)
 If given, it will be run any time the task is requested, even if the `prerequisites` are up-to-date.
+`recipe` will be called with one argument: the [`Rule`](#class-rule) being run.
+
+If `recipe` returns a `Promise`,
+`promake` will wait for it to resolve before moving on to the next rule or task.  If the `recipe` throws an Error or
+returns a `Promise` that rejects, the build will fail.
 
 #### Returns
-The created `Rule`.
+The created [`Rule`](#class Rule).
 
 Calling `task(name)` without any `prerequisites` or `recipe` looks up and returns the previously created task `Rule` for
 `name`, but *it will throw an `Error`* if no such task exists.
@@ -179,6 +196,58 @@ An object that may have the following properties:
 #### Returns
 A `Promise` that will resolve when `Promake` finishes running the requested tasks and file rules, or throw if it fails
 (but this is only useful if `options.exit === false` to prevent `cli()` from calling `process.exit` when it's done).
+
+### `log(verbosity, ...args)`
+
+Logs `...args` to `console.error` unless `verbosity` is higher than the user requested.
+
+#### `verbosity`
+
+One of the enum constants in [`Promake.Verbosity`](#static-verbosity).
+
+#### `...args`
+
+The things to log
+
+### `logStream(verbosity, stream)`
+
+Pipes `stream` to `stderr` unless `verbosity` is higher than the user requested.
+
+#### `verbosity`
+
+One of the enum constants in [`Promake.Verbosity`](#static-verbosity).
+
+#### `stream`
+
+An instance of [`stream.Readable`](http://devdocs.io/node/stream#stream_class_stream_readable).
+
+### `static Verbosity`
+
+An enumeration of verbosity levels for logging: has keys `QUIET`, `DEFAULT`, and `HIGH`.
+
+## `class Rule`
+
+This is an instance of a rule created by `Promake.rule` or `Promake.task`.  It has the following properties:
+
+### `promake`
+
+The instance of `Promake` this rule was created in.
+
+### `targets`
+
+The normalized array of resources this rule produces.
+
+### `prerequisites`
+
+The normalized array of resources that must be made before running this rule.
+
+### `then(onResolved, [onRejected])`
+
+Starts running this rule if it isn't already, and calls `onResolved` when it finishes or `onReject` when it fails.
+
+### `catch(onRejected)`
+
+Same as calling `then(undefined, onRejected)`.
 
 ## The `Resource` interface
 

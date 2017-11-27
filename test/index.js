@@ -184,6 +184,13 @@ describe('Promake', () => {
         expect(onResolved.called).to.be.false
         expect(onRejected.args[0][0]).to.be.an.instanceOf(Error)
       })
+      it("calls recipe with Rule instance", async () => {
+        const {rule} = new Promake()
+        const recipe = sinon.spy()
+        const fooRule = rule(new TestResource('foo'), recipe)
+        await fooRule
+        expect(recipe.args[0][0]).to.equal(fooRule)
+      })
     })
   })
   describe('.cli', () => {
