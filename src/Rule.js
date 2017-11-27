@@ -2,6 +2,7 @@
 
 import type Promake from './Promake'
 import type {Resource} from './Resource'
+import TaskResource from './TaskResource'
 import Verbosity from './Verbosity'
 
 type Props = {
@@ -30,6 +31,9 @@ class Rule {
     const {targets, promake, prerequisites, recipe} = this
     const targetTimes = await Promise.all(targets.map(target => target.lastModified()))
     const prerequisiteTimes = []
+    if (targets.length === 1 && targets[0] instanceof TaskResource && !recipe) {
+      promake._log(Verbosity.DEFAULT, 'Making', this)
+    }
     for (let prerequisite of prerequisites) prerequisiteTimes.push(await promake._make(prerequisite))
     const finiteTargetTimes: Array<number> = (targetTimes.filter(Number.isFinite): any)
     if (finiteTargetTimes.length === targetTimes.length && !this.runAtLeastOnce) {

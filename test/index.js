@@ -255,8 +255,9 @@ describe('Promake', () => {
     it("doesn't rebuild after build", async () => {
       await exec('babel-node promake clean build', {cwd})
       const {stderr} = await exec('babel-node promake build', {cwd})
-      expect(stderr).not.to.match(/making/i)
-      expect(stderr).to.match(/nothing to be done/i)
+      expect(stderr).to.match(/nothing to be done for build\/server/i)
+      expect(stderr).to.match(/nothing to be done for build\/universal/i)
+      expect(stderr).to.match(/nothing to be done for build\/assets/i)
     })
     it("outputs nothing when run with -q", async () => {
       const {stdout, stderr} = await exec('babel-node promake build -q', {cwd})
