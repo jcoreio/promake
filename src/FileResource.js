@@ -1,6 +1,7 @@
 // @flow
 
 import type {Resource} from './Resource'
+import {resolve, normalize, relative} from 'path'
 import fs from 'fs'
 import promisify from 'es6-promisify'
 
@@ -10,7 +11,7 @@ class FileResource implements Resource {
   file: string;
 
   constructor(file: string) {
-    this.file = file
+    this.file = normalize(resolve(file))
   }
 
   async lastModified(): Promise<?number> {
@@ -24,7 +25,7 @@ class FileResource implements Resource {
   }
 
   toString(): string {
-    return this.file
+    return relative(process.cwd(), this.file)
   }
 }
 

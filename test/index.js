@@ -40,6 +40,14 @@ describe('Promake', () => {
     })
   })
   describe('.rule', () => {
+    it('resolves and normalizes file targets', () => {
+      const {rule} = new Promake()
+      const fooRule = rule('foo', () => {})
+      const barRule = rule(path.resolve('somedir/../bar'), () => {})
+
+      expect(rule(path.resolve('foo'))).to.equal(fooRule)
+      expect(rule('bar')).to.equal(barRule)
+    })
     it('throws when invalid target types are given', () => {
       const {rule} = new Promake()
       expect(() => rule(2, () => {})).to.throw(RuntimeError)

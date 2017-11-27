@@ -35,8 +35,9 @@ class Promake {
 
   _normalizeResource = (resource: any): Resource => {
     if (typeof resource === 'string') {
-      let file = this.fileResources.get(resource)
-      if (!file) this.fileResources.set(resource, file = new FileResource(resource))
+      const normalized = new FileResource(resource)
+      let file = this.fileResources.get(normalized.file)
+      if (!file) this.fileResources.set(normalized.file, file = normalized)
       return file
     }
     return resource
@@ -63,7 +64,7 @@ class Promake {
 
   _normalizeNames = (names: Array<string>): Array<Resource> => {
     return names.map((name: string): Resource => {
-      const result = this.taskResources.get(name) || this.fileResources.get(name)
+      const result = this.taskResources.get(name) || this.fileResources.get(new FileResource(name).file)
       if (!result) throw new Error(`no task or file found for ${name}`)
       return result
     })
