@@ -1,5 +1,6 @@
 // @flow
 
+import path from 'path'
 import {reify} from 'flow-runtime'
 import type {Type} from 'flow-runtime'
 import type {Resource} from './Resource'
@@ -154,6 +155,22 @@ class Promake {
     return rule
   }
 
+  printUsage = () => {
+    const {version} = require('../package.json')
+    process.stderr.write(`promake CLI, version ${version}
+
+Usage:
+  ./<script> [options...] [tasks...]
+
+Options:
+  -q, --quiet       suppress output
+  -v, --verbose     verbose output
+
+Tasks:
+  ${[...this.taskResources.keys()].sort().join('\n  ')}
+`)
+  }
+
   cli = async (argv: Array<string> = process.argv, options?: CliOptions = {}): Promise<any> => {
     try {
       argv = argv.slice(2)
@@ -175,6 +192,7 @@ class Promake {
         }
       }
       const resources = this._normalizeNames(resourceNames)
+      if (!resources.length) this.printUsage()
       for (let resource of resources) {
         await this._make(resource)
       }

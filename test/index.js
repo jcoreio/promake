@@ -242,6 +242,16 @@ describe('Promake', () => {
       await exec('babel-node promake clean', {cwd})
       expect(await fs.pathExists('test/integration/promake/build')).to.be.false
     })
+    it('prints usage and task list when no targets are requested', async () => {
+      const {stderr} = await exec('babel-node promake -v', {cwd})
+      expect(stderr).to.contain(`
+Tasks:
+  build
+  clean
+  client
+  server
+`)
+    })
     it('throws an error when run with an invalid target', async () => {
       let stderr = ''
       const child = exec('babel-node promake clean glab', {cwd})
