@@ -23,6 +23,7 @@ Promise-based JS make clone that can target anything, not just files
     + [`promake`](#promake-2)
     + [`targets`](#targets)
     + [`prerequisites`](#prerequisites)
+    + [`args`](#args)
     + [`then(onResolved, [onRejected])`](#thenonresolved-onrejected)
     + [`catch(onRejected)`](#catchonrejected)
   * [The `Resource` interface](#the-resource-interface)
@@ -350,6 +351,23 @@ rule(dest, src, async () => {
   await exec(`git commit -m "update ${dest}"`)
 })
 ```
+
+## Pass args through to a shell command
+
+The args from the CLI are avaliable on [`Rule.args`](#args):
+
+```js
+const {rule, exec} = new Promake()
+
+task('npm', rule => exec(`npm ${rule.args.map(JSON.stringify).join(' ')}`))
+```
+
+And run your task with:
+```
+./promake npm -- install --save-dev somepackage
+```
+
+See [CLI documentation](#cliargv--processargv-options) for more details.
 
 ## Make Tasks Prerequisites of Other Tasks
 
