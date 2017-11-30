@@ -179,9 +179,12 @@ API as [`child_process`](http://devdocs.io/node/child_process#child_process_chil
 but the returned `ChildProcess` also has `then` and `catch` methods like a `Promise`, so it can be `await`ed.
 
 ### `cli(argv = process.argv, [options])`
-Runs the command-line interface for the given arguments.
-Unless `options.exit === false`, after running all requested tasks and file rules, it will exit the process with a code
+Runs the command-line interface for the given arguments, which should include requested targets
+(names of files or tasks).
+Unless `options.exit === false`, after running all requested targets, it will exit the process with a code
 of 0 if the build succeeded, and nonzero if the build failed.
+
+If no targets are requested, prints usage info and the list of available tasks and exits with a code of 0.
 
 ##### `argv` (optional, default: `process.argv`)
 The command-line arguments.  May include:
