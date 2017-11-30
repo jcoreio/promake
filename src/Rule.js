@@ -17,6 +17,7 @@ class Rule {
   promake: Promake
   targets: Array<Resource>
   prerequisites: Array<Resource>
+  args: Array<string> = []
   recipe: ?((rule: Rule) => ?Promise<any>)
   runAtLeastOnce: boolean = false
 

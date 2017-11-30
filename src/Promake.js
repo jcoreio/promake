@@ -63,12 +63,10 @@ class Promake {
     return Array.isArray(normalized) ? normalized : [normalized]
   }
 
-  _normalizeNames = (names: Array<string>): Array<Resource> => {
-    return names.map((name: string): Resource => {
-      const result = this.taskResources.get(name) || this.fileResources.get(new FileResource(name).file)
-      if (!result) throw new Error(`no task or file found for ${name}`)
-      return result
-    })
+  _normalizeName = (name: string): Resource => {
+    const result = this.taskResources.get(name) || this.fileResources.get(new FileResource(name).file)
+    if (!result) throw new Error(`no task or file found for ${name}`)
+    return result
   }
 
   _make = async (resource: Resource): Promise<?number> => {
@@ -166,17 +164,31 @@ Options:
   -v, --verbose     verbose output
 
 Tasks:
-  ${[...this.taskResources.keys()].sort().join('\n  ')}
+  ${[...this.taskResources.keys()].sort().join('\n  ') || '(No tasks defined)'}
 `)
   }
 
   cli = async (argv: Array<string> = process.argv, options?: CliOptions = {}): Promise<any> => {
+    let ruleArgsMode = false
     try {
       argv = argv.slice(2)
-      const resourceNames: Array<string> = []
+      const targets: Array<Resource> = []
+      let lastTarget: ?Resource
       for (let i = 0; i < argv.length; i++) {
-        if (argv[i].startsWith('-')) {
+        if (ruleArgsMode) {
+          if (argv[i] === '--') {
+            ruleArgsMode = false
+          } else if (lastTarget) {
+            this.rule(lastTarget).args.push(argv[i].replace(/^--(-+)$/, '$1'))
+          }
+        } else if (argv[i].startsWith('-')) {
           switch (argv[i]) {
+          case '--':
+            if (lastTarget) {
+              this.rule(lastTarget).args = []
+              ruleArgsMode = true
+            }
+            break
           case '-q':
           case '--quiet':
             this.verbosity = Verbosity.QUIET
@@ -187,14 +199,12 @@ Tasks:
             break
           }
         } else {
-          resourceNames.push(argv[i])
+          targets.push(lastTarget = this._normalizeName(argv[i]))
         }
       }
-      const resources = this._normalizeNames(resourceNames)
-      if (!resources.length) this.printUsage()
-      for (let resource of resources) {
-        await this._make(resource)
-      }
+      if (!targets.length) this.printUsage()
+      for (let target of targets) await this._make(target)
+
       if (options.exit !== false) process.exit(0)
     } catch (error) {
       if (options.exit !== false) {

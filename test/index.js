@@ -234,6 +234,29 @@ describe('Promake', () => {
 
       expect(error).to.be.an.instanceOf(Error)
     })
+    it('passes args to rules', async () => {
+      const {rule, task, cli} = new Promake()
+
+      const foo = new TestResource('foo')
+      const bar = new TestResource('bar')
+      rule(foo, () => foo.touch())
+      rule(bar, () => bar.touch())
+
+      let fooArgs: ?Array<string>
+      let barArgs: ?Array<string>
+
+      task('foo', foo, rule => fooArgs = rule.args)
+      task('bar', bar, rule => barArgs = rule.args)
+
+      await cli([
+        'node', 'promake.js', '--',
+        'foo', '--', 'a', '----', 'b', '--',
+        'bar', '--', 'c', 'd'
+      ])
+
+      expect(fooArgs).to.deep.equal(['a', '--', 'b'])
+      expect(barArgs).to.deep.equal(['c', 'd'])
+    })
   })
   describe('integration test', function () {
     this.timeout(15 * 60000)

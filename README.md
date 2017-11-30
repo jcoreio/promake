@@ -192,6 +192,23 @@ The command-line arguments.  May include:
 * File names - rules for these files will be run, in the order requested
 * `--quiet`, `-q`: suppress output
 
+You can pass args to the rule for a target by adding `-- args...` after the rule:
+```
+runDocker -- --rm --env FOO=BAR
+```
+
+If you want to pass args to multiple rules, put another `--` after the args to a rule:
+```
+runDocker -- --rm --env FOO=BAR -- runNpm -- install --save-dev somepackage
+```
+(args to rule for `runDocker`: `--rm --env FOO=BAR`, args to rule for `runNpm`: `install --save-dev somepackage`)
+
+If, god forbit, you want to pass `--` as an arg to a rule, use `----`:
+```
+runNpm -- nyc ---- --grep something
+```
+(args to rule for `runNpm` become `nyc -- --grep something`)
+
 ##### `options` (optional)
 An object that may have the following properties:
 * `exit` - unless this is `false`, `cli()` will exit once it has finished running the requested tasks and file rules.
@@ -243,6 +260,10 @@ The normalized array of resources this rule produces.
 ### `prerequisites`
 
 The normalized array of resources that must be made before running this rule.
+
+### `args`
+
+Any args for this rule (from the [CLI](#cliargv--processargv-options), usually)
 
 ### `then(onResolved, [onRejected])`
 
