@@ -252,7 +252,7 @@ describe('Promake', () => {
         'node', 'promake.js', '--',
         'foo', '--', 'a', '----', 'b', '--',
         'bar', '--', 'c', 'd'
-      ])
+      ], {exit: false})
 
       expect(fooArgs).to.deep.equal(['a', '--', 'b'])
       expect(barArgs).to.deep.equal(['c', 'd'])
