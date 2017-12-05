@@ -33,6 +33,7 @@ Promise-based JS make clone that can target anything, not just files
   * [Glob Files](#glob-files)
   * [Perform File System Operations](#perform-file-system-operations)
   * [Execute Shell Commands](#execute-shell-commands)
+  * [Pass args through to a shell command](#pass-args-through-to-a-shell-command)
   * [Make Tasks Prerequisites of Other Tasks](#make-tasks-prerequisites-of-other-tasks)
   * [Depend on Values of Environment Variables](#depend-on-values-of-environment-variables)
 - [Examples](#examples)
