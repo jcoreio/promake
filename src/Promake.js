@@ -153,8 +153,9 @@ class Promake {
   }
 
   printUsage = () => {
-    const {version} = require('../package.json')
+    const {version, homepage} = require('../package.json')
     process.stderr.write(`promake CLI, version ${version}
+${homepage}/tree/v${version}
 
 Usage:
   ./<script> [options...] [tasks...]

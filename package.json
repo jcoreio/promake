@@ -50,7 +50,7 @@
   "bugs": {
     "url": "https://github.com/jcoreio/promake/issues"
   },
-  "homepage": "https://github.com/jcoreio/promake#readme",
+  "homepage": "https://github.com/jcoreio/promake",
   "devDependencies": {
     "@jedwards1211/eslint-config": "^1.0.0",
     "@jedwards1211/eslint-config-flow": "^1.0.0",
