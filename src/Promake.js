@@ -7,7 +7,7 @@ import FileResource from './FileResource'
 import Rule from './Rule'
 import TaskResource from './TaskResource'
 // $FlowFixMe
-import {exec} from 'child-process-async'
+import {exec, spawn} from 'child-process-async'
 import chalk from 'chalk'
 import type {ChildProcess} from 'child_process'
 import Verbosity from './Verbosity'
@@ -81,7 +81,7 @@ class Promake {
   }
 
   log = (verbosity: VerbosityLevel, ...args: any) => {
-    if (this.verbosity >= verbosity) console.error(...args) // eslint-disable-line no-console
+    if (this.verbosity >= verbosity) console.error(chalk.bold('[promake]'), ...args) // eslint-disable-line no-console
   }
 
   logStream = (verbosity: VerbosityLevel, stream: Readable) => {
@@ -96,7 +96,24 @@ class Promake {
 
   exec = (command: string, options?: child_process$execOpts = {}): ChildProcess => {
     const child = exec(command, options)
-    this.log(Verbosity.DEFAULT, chalk.gray('$'), chalk.gray(command))
+    if (this.verbosity >= Verbosity.DEFAULT) console.error(chalk.gray('$'), chalk.gray(command)) // eslint-disable-line no-console
+    this._logChildProcess(child)
+    return child
+  }
+
+  spawn = (command: string, argsOrOptions?: Array<string> | child_process$spawnOpts, options?: child_process$spawnOpts): ChildProcess => {
+    const args = Array.isArray(argsOrOptions) ? argsOrOptions : []
+    if (argsOrOptions instanceof Object && !Array.isArray(argsOrOptions)) {
+      options = argsOrOptions
+    }
+    if (!options) options = {}
+    function formatArg(arg: string): string {
+      const stringified = JSON.stringify(arg)
+      const result = stringified === `"${arg}"` ? arg : stringified
+      return chalk.gray(result)
+    }
+    const child = spawn(command, args, options)
+    if (this.verbosity >= Verbosity.DEFAULT) console.error(chalk.gray('$'), chalk.gray(command), ...args.map(formatArg)) // eslint-disable-line no-console
     this._logChildProcess(child)
     return child
   }

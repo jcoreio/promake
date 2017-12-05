@@ -15,6 +15,7 @@ Promise-based JS make clone that can target anything, not just files
     + [`rule(targets, prerequisites, recipe)`](#ruletargets-prerequisites-recipe)
     + [`task(name, [prerequisites], [recipe])`](#taskname-prerequisites-recipe)
     + [`exec(command, [options])`](#execcommand-options)
+    + [`spawn(command, [args], [options])`](#spawncommand-args-options)
     + [`cli(argv = process.argv, [options])`](#cliargv--processargv-options)
     + [`log(verbosity, ...args)`](#logverbosity-args)
     + [`logStream(verbosity, stream)`](#logstreamverbosity-stream)
@@ -179,6 +180,13 @@ with a bit of extra logic to handle logging.  It has the same
 API as [`child_process`](http://devdocs.io/node/child_process#child_process_child_process_exec_command_options_callback)
 but the returned `ChildProcess` also has `then` and `catch` methods like a `Promise`, so it can be `await`ed.
 
+### `spawn(command, [args], [options])`
+
+This is a wrapper for [`spawn` from `child-process-async`](https://github.com/itsjustcon/node-child-process-async#spawn)
+with a bit of extra logic to handle logging.  It has the same
+API as [`child_process`](http://devdocs.io/node/child_process#child_process_child_process_spawn_command_args_options)
+but the returned `ChildProcess` also has `then` and `catch` methods like a `Promise`, so it can be `await`ed.
+
 ### `cli(argv = process.argv, [options])`
 Runs the command-line interface for the given arguments, which should include requested targets
 (names of files or tasks).
@@ -333,17 +341,18 @@ rule(dest, src, async () => {
 
 ## Execute Shell Commands
 
-Use the [`exec` method of your `Promake` instance](#execcommand-options).
+Use the [`exec` method](#execcommand-options)
+or the [`spawn` method](#spawncommand-args-options) of your `Promake` instance.
 ```js
-const {rule, exec} = new Promake()
+const {rule, exec, spawn} = new Promake()
 ```
 
-To run a single command in a task, you can just return the result of `exec` because it is Promise-like:
+To run a single command in a task, you can just return the result of `exec` or `spawn` because it is Promise-like:
 ```js
 rule(dest, src, () => exec(`cp ${src} ${dest}`))
 ```
 
-To run multiple commands, you can use an async lambda and `await` each `exec` call:
+To run multiple commands, you can use an async lambda and `await` each `exec` or `spawn` call:
 ```js
 rule(dest, src, async () => {
   await exec(`cp ${src} ${dest}`)
@@ -357,9 +366,9 @@ rule(dest, src, async () => {
 The args from the CLI are avaliable on [`Rule.args`](#args):
 
 ```js
-const {rule, exec} = new Promake()
+const {rule, spawn} = new Promake()
 
-task('npm', rule => exec(`npm ${rule.args.map(JSON.stringify).join(' ')}`))
+task('npm', rule => spawn('npm', rule.args))
 ```
 
 And run your task with:

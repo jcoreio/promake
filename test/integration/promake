@@ -24,13 +24,13 @@ const clientBuildFiles = [
   'build/assets/client.bundle.js',
 ]
 
-const {rule, task, cli, exec} = new Promake()
+const {rule, task, cli, exec, spawn} = new Promake()
 
 rule(serverBuildFiles, serverPrerequistes, () => exec('babel src/server/ --out-dir build/server'))
 rule(universalBuildFiles, universalPrerequistes, () => exec('babel src/universal/ --out-dir build/universal'))
 rule(clientBuildFiles, clientPrerequisites, async () => {
   await fs.mkdirs('build')
-  await exec('webpack --progress --colors')
+  await spawn('webpack', ['--progress', '--colors'])
 })
 
 task('build', [
