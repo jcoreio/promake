@@ -176,14 +176,14 @@ Calling `task(name)` without any `prerequisites` or `recipe` looks up and return
 
 ### `exec(command, [options])`
 
-This is a wrapper for [`exec` from `child-process-async`](https://github.com/itsjustcon/node-child-process-async#exec)
+This is a wrapper for [`exec` from `promisify-child-process`](https://github.com/itsjustcon/node-promisify-child-process#exec)
 with a bit of extra logic to handle logging.  It has the same
 API as [`child_process`](http://devdocs.io/node/child_process#child_process_child_process_exec_command_options_callback)
 but the returned `ChildProcess` also has `then` and `catch` methods like a `Promise`, so it can be `await`ed.
 
 ### `spawn(command, [args], [options])`
 
-This is a wrapper for [`spawn` from `child-process-async`](https://github.com/itsjustcon/node-child-process-async#spawn)
+This is a wrapper for [`spawn` from `promisify-child-process`](https://github.com/itsjustcon/node-promisify-child-process#spawn)
 with a bit of extra logic to handle logging.  It has the same
 API as [`child_process`](http://devdocs.io/node/child_process#child_process_child_process_spawn_command_args_options)
 but the returned `ChildProcess` also has `then` and `catch` methods like a `Promise`, so it can be `await`ed.

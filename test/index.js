@@ -3,8 +3,7 @@
 import {describe, it} from 'mocha'
 import {expect} from 'chai'
 import sinon from 'sinon'
-// $FlowFixMe
-import {exec} from 'child-process-async'
+import {exec} from 'promisify-child-process'
 import fs from 'fs-extra'
 import path from 'path'
 import {RuntimeError} from 'flow-runtime'
