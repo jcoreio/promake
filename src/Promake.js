@@ -12,6 +12,7 @@ import type {ChildProcess} from 'child_process'
 import Verbosity from './Verbosity'
 import type {VerbosityLevel} from './Verbosity'
 import type {Readable} from 'stream'
+import padEnd from 'lodash.padend'
 
 type Resources = Array<string | Resource> | string | Resource
 
@@ -170,6 +171,8 @@ class Promake {
 
   printUsage = () => {
     const {version, homepage} = require('../package.json')
+    const tasks = [...this.taskResources.keys()].sort()
+    const taskColumnWidth = Math.max(16, ...tasks.map(name => name.length)) + 2
     process.stderr.write(`promake CLI, version ${version}
 ${homepage}/tree/v${version}
 
@@ -181,7 +184,9 @@ Options:
   -v, --verbose     verbose output
 
 Tasks:
-  ${[...this.taskResources.keys()].sort().join('\n  ') || '(No tasks defined)'}
+  ${tasks.map(task =>
+      `${padEnd(task, taskColumnWidth)}${this.task(task).description() || ''}`
+    ).join('\n  ') || '(No tasks defined)'}
 `)
   }
 

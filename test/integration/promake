@@ -34,11 +34,11 @@ rule(clientBuildFiles, clientPrerequisites, async () => {
 })
 
 task('build', [
-  task('server', [...serverBuildFiles, ...universalBuildFiles]),
-  task('client', clientBuildFiles),
-])
+  task('build:server', [...serverBuildFiles, ...universalBuildFiles]),
+  task('build:client', clientBuildFiles),
+]).description('build server and client')
 
-task('clean', () => fs.remove('build'))
+task('clean', () => fs.remove('build')).description('remove all build output')
 
 cli()
 

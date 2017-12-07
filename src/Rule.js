@@ -24,6 +24,8 @@ class Rule {
   lastFinishTime: ?number
   promise: ?Promise<any>
 
+  _description: ?string
+
   constructor(props: Props) {
     Object.assign(this, props)
   }
@@ -56,6 +58,12 @@ class Rule {
   make = (): Promise<any> => {
     return this.promise = this._make()
   }
+
+  description: (() => ?string) & ((newDescription: string) => Rule) = function (newDescription?: string): any {
+    if (!arguments.length) return this._description
+    this._description = newDescription
+    return this
+  }.bind(this)
 
   then = (onResolve: ?(() => any), onReject?: (error: Error) => any): Promise<any> => {
     let {promise} = this

@@ -268,10 +268,10 @@ describe('Promake', () => {
       const {stderr} = await exec('babel-node promake -v', {cwd})
       expect(stderr).to.contain(`
 Tasks:
-  build
-  clean
-  client
-  server
+  build             build server and client
+  build:client      
+  build:server      
+  clean             remove all build output
 `)
     })
     it('throws an error when run with an invalid target', async () => {

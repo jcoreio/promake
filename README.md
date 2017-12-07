@@ -25,6 +25,7 @@ Promise-based JS make clone that can target anything, not just files
     + [`targets`](#targets)
     + [`prerequisites`](#prerequisites)
     + [`args`](#args)
+    + [`description([newDescription])`](#descriptionnewdescription)
     + [`then(onResolved, [onRejected])`](#thenonresolved-onrejected)
     + [`catch(onRejected)`](#catchonrejected)
   * [The `Resource` interface](#the-resource-interface)
@@ -36,6 +37,7 @@ Promise-based JS make clone that can target anything, not just files
   * [Pass args through to a shell command](#pass-args-through-to-a-shell-command)
   * [Make Tasks Prerequisites of Other Tasks](#make-tasks-prerequisites-of-other-tasks)
   * [Depend on Values of Environment Variables](#depend-on-values-of-environment-variables)
+  * [List available tasks](#list-available-tasks)
 - [Examples](#examples)
   * [Transpiling files with Babel](#transpiling-files-with-babel)
   * [Basic Webapp](#basic-webapp)
@@ -148,6 +150,15 @@ Creates a task, which is really just a `rule`, but can be run by `name` from the
 actual file that exists, similar to a [phony target in `make`](https://www.gnu.org/software/make/manual/make.html#Phony-Targets).
 
 Task names take precedence over file names when specifying what to build in CLI options.
+
+You can set the description for the task by calling [`.description()`](#descriptionnewdescription)
+on the returned `Rule`.  This description will be printed alongside the task
+if you call the CLI without any targets.  For example:
+```js
+task('clean', () =>
+  require('fs-extra').remove('build')
+).description('removes build output')
+```
 
 ##### `name`
 The name of the task
@@ -274,6 +285,12 @@ The normalized array of resources that must be made before running this rule.
 ### `args`
 
 Any args for this rule (from the [CLI](#cliargv--processargv-options), usually)
+
+### `description([newDescription])`
+
+Gets or sets the description of this rule.  If you provide an argument,
+sets the description and returns this rule.  Otherwise, returns the
+description.
 
 ### `then(onResolved, [onRejected])`
 
@@ -423,6 +440,30 @@ const buildEnv = 'lib/.buildEnv'
 
 envRule(buildEnv, ['NODE_ENV', 'BABEL_ENV'])
 rule(lib, [...src, buildEnv], () => exec('babel src/ --out-dir lib'))
+```
+
+## List available tasks
+
+Run the CLI without specifying any targets.  For instance if your
+build file is `promake`, run:
+
+```
+> ./promake
+promake CLI, version X.X.X
+https://github.com/jcoreio/promake/tree/vX.X.X
+
+Usage:
+  ./<script> [options...] [tasks...]
+
+Options:
+  -q, --quiet       suppress output
+  -v, --verbose     verbose output
+
+Tasks:
+  build             build server and client
+  build:client
+  build:server
+  clean             remove all build output
 ```
 
 # Examples
