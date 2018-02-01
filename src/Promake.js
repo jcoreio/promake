@@ -108,9 +108,8 @@ class Promake {
     }
     if (!options) options = {}
     function formatArg(arg: string): string {
-      const stringified = JSON.stringify(arg)
-      const result = stringified === `"${arg}"` ? arg : stringified
-      return chalk.gray(result)
+      if (/^[-_a-z0-9=.\/]$/i.test(arg)) return chalk.gray(arg)
+      return chalk.gray(`'${arg.replace(/'/g, "'\\''")}'`)
     }
     const child = spawn(command, args, options)
     if (this.verbosity >= Verbosity.DEFAULT) console.error(chalk.gray('$'), chalk.gray(command), ...args.map(formatArg)) // eslint-disable-line no-console
