@@ -98,10 +98,17 @@ describe('Promake', () => {
         rule(foo, () => foo.touch())
         await rule(baz, [foo, bar], () => baz.touch())
 
-        expect(bar.mtime).to.equal(barTime)
-        expect(foo.mtime).to.be.greaterThan(bar.mtime)
-        expect(baz.mtime).to.be.greaterThan(foo.mtime)
-        expect(baz.mtime).to.be.greaterThan(bar.mtime)
+        const fooMtime = foo.mtime
+        const barMtime = bar.mtime
+        const bazMtime = baz.mtime
+        if (fooMtime == null) throw new Error('expected fooMtime to be defined')
+        if (barMtime == null) throw new Error('expected barMtime to be defined')
+        if (bazMtime == null) throw new Error('expected bazMtime to be defined')
+
+        expect(barMtime).to.equal(barTime)
+        expect(fooMtime).to.be.above(barMtime)
+        expect(bazMtime).to.be.above(fooMtime)
+        expect(bazMtime).to.be.above(barMtime)
       })
       it("doesn't rerun rule when target is newer", async () => {
         const {rule} = new Promake()
@@ -126,11 +133,11 @@ describe('Promake', () => {
 
         await foo.touch()
         const fooTime = await foo.lastModified()
-        expect(fooTime).to.exist
+        if (fooTime == null) throw new Error("expected fooTime to be defined")
 
         await rule(foo, () => foo.touch(), {runAtLeastOnce: true})
 
-        expect(await foo.lastModified()).to.be.greaterThan(fooTime)
+        expect(await foo.lastModified()).to.be.above(fooTime)
       })
       it("doesn't rerun rule when called again", async () => {
         const {rule} = new Promake()
@@ -144,7 +151,7 @@ describe('Promake', () => {
         const bazRule = rule(baz, [foo, bar], () => baz.touch())
         await bazRule
         const bazTime = await baz.lastModified()
-        expect(bazTime).to.exist
+        if (bazTime == null) throw new Error("expected bazTime to be defined")
 
         await bazRule
         expect(await baz.lastModified()).to.equal(bazTime)
@@ -160,12 +167,12 @@ describe('Promake', () => {
         await foo.touch()
         await bar.touch()
         const bazTime = await baz.lastModified()
-        expect(bazTime).to.exist
+        if (bazTime == null) throw new Error("expected bazTime to be defined")
 
         rule(foo, () => foo.touch())
         await rule(baz, [foo, bar], () => baz.touch())
 
-        expect(await baz.lastModified()).to.be.greaterThan(bazTime)
+        expect(await baz.lastModified()).to.be.above(bazTime)
       })
       it("throws when one of the prerequisites cannot be made", async () => {
         const {rule} = new Promake()
@@ -208,10 +215,17 @@ describe('Promake', () => {
 
       await cli(['node', 'promake.js', 'makeBaz'], {exit: false})
 
-      expect(bar.mtime).to.equal(barTime)
-      expect(foo.mtime).to.be.greaterThan(bar.mtime)
-      expect(baz.mtime).to.be.greaterThan(foo.mtime)
-      expect(baz.mtime).to.be.greaterThan(bar.mtime)
+      const fooMtime = foo.mtime
+      const barMtime = bar.mtime
+      const bazMtime = baz.mtime
+      if (fooMtime == null) throw new Error('expected fooMtime to be defined')
+      if (barMtime == null) throw new Error('expected barMtime to be defined')
+      if (bazMtime == null) throw new Error('expected bazMtime to be defined')
+
+      expect(barMtime).to.equal(barTime)
+      expect(fooMtime).to.be.above(barMtime)
+      expect(bazMtime).to.be.above(fooMtime)
+      expect(bazMtime).to.be.above(barMtime)
     })
     it('increases verbosity when called with -v', async () => {
       const promake = new Promake()
