@@ -108,7 +108,7 @@ class Promake {
     }
     if (!options) options = {}
     function formatArg(arg: string): string {
-      if (/^[-_a-z0-9=.\/]$/i.test(arg)) return chalk.gray(arg)
+      if (/^[-_a-z0-9=.\/]+$/i.test(arg)) return chalk.gray(arg)
       return chalk.gray(`'${arg.replace(/'/g, "'\\''")}'`)
     }
     const child = spawn(command, args, options)
