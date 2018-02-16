@@ -108,7 +108,7 @@
 
 "@jedwards1211/eslint-config@^2.0.0":
   version "2.0.0"
-  resolved "https://registry.npmjs.org/@jedwards1211/eslint-config/-/eslint-config-2.0.0.tgz#9a12391cbdfe449983b7a299a9057dc7afa87cdf"
+  resolved "https://registry.yarnpkg.com/@jedwards1211/eslint-config/-/eslint-config-2.0.0.tgz#9a12391cbdfe449983b7a299a9057dc7afa87cdf"
 
 "@marionebl/sander@^0.6.0":
   version "0.6.1"
@@ -2207,6 +2207,10 @@ es6-promisify@^5.0.0:
   resolved "https://registry.npmjs.org/es6-promisify/-/es6-promisify-5.0.0.tgz#5109d62f3e56ea967c4b63505aef08291c8a5203"
   dependencies:
     es6-promise "^4.0.3"
+
+es6-promisify@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/es6-promisify/-/es6-promisify-6.0.0.tgz#b526a75eaa5ca600e960bf3d5ad98c40d75c7203"
 
 es6-set@~0.1.5:
   version "0.1.5"
