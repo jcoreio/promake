@@ -4858,9 +4858,9 @@ progress@^1.1.8:
   version "1.1.8"
   resolved "https://registry.npmjs.org/progress/-/progress-1.1.8.tgz#e260c78f6161cdd9b0e56cc3e0a85de17c7a57be"
 
-promisify-child-process@^1.0.0:
-  version "1.0.3"
-  resolved "https://registry.npmjs.org/promisify-child-process/-/promisify-child-process-1.0.3.tgz#b60e4bf2e0e5a2d83c3dbc521d714a402984ecfd"
+promisify-child-process@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/promisify-child-process/-/promisify-child-process-2.0.0.tgz#4fea59fc0799ebdc83adc7ca4657996435be48f9"
 
 proto-list@~1.2.1:
   version "1.2.4"
