@@ -13,6 +13,10 @@ type Props = {
   runAtLeastOnce?: boolean,
 }
 
+type MakeOptions = {
+  force?: boolean,
+}
+
 class Rule {
   promake: Promake
   targets: Array<Resource>
@@ -30,7 +34,7 @@ class Rule {
     Object.assign(this, props)
   }
 
-  _make = async (): Promise<any> => {
+  _make = async ({force}: MakeOptions = {}): Promise<any> => {
     const {targets, promake, prerequisites, recipe} = this
     const targetTimes = await Promise.all(targets.map(target => target.lastModified()))
     const prerequisiteTimes = []
@@ -39,7 +43,7 @@ class Rule {
     }
     for (let prerequisite of prerequisites) prerequisiteTimes.push(await promake._make(prerequisite))
     const finiteTargetTimes: Array<number> = (targetTimes.filter(Number.isFinite): any)
-    if (finiteTargetTimes.length === targetTimes.length && !this.runAtLeastOnce) {
+    if (!force && finiteTargetTimes.length === targetTimes.length && !this.runAtLeastOnce) {
       const finitePrerequisiteTimes: Array<number> = (prerequisiteTimes.filter(Number.isFinite): any)
       const minTargetTime = Math.min(...finiteTargetTimes)
       const maxPrerequisiteTime = Math.max(...finitePrerequisiteTimes)
@@ -55,8 +59,8 @@ class Rule {
     this.lastFinishTime = Date.now()
   }
 
-  make = (): Promise<any> => {
-    return this.promise = this._make()
+  make = (options: MakeOptions = {}): Promise<any> => {
+    return this.promise = this._make(options)
   }
 
   description: (() => ?string) & ((newDescription: string) => Rule) = function (newDescription?: string): any {
@@ -82,4 +86,3 @@ class Rule {
 }
 
 module.exports = Rule
-
