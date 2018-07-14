@@ -2,25 +2,19 @@
 
 import type Promake from './Promake'
 import type {Resource} from './Resource'
-import TaskResource from './TaskResource'
-import Verbosity from './Verbosity'
 
-type Props = {
+export type Props = {
   promake: Promake,
-  targets: Array<Resource>,
-  prerequisites: Array<Resource>,
+  targets: $ReadOnlyArray<Resource>,
+  prerequisites: $ReadOnlyArray<Resource>,
   recipe: ?((rule: Rule) => ?Promise<any>),
   runAtLeastOnce?: boolean,
 }
 
-type MakeOptions = {
-  force?: boolean,
-}
-
 class Rule {
   promake: Promake
-  targets: Array<Resource>
-  prerequisites: Array<Resource>
+  targets: $ReadOnlyArray<Resource>
+  prerequisites: $ReadOnlyArray<Resource>
   args: Array<string> = []
   recipe: ?((rule: Rule) => ?Promise<any>)
   runAtLeastOnce: boolean = false
@@ -34,33 +28,12 @@ class Rule {
     Object.assign(this, props)
   }
 
-  _make = async ({force}: MakeOptions = {}): Promise<any> => {
-    const {targets, promake, prerequisites, recipe} = this
-    const targetTimes = await Promise.all(targets.map(target => target.lastModified()))
-    const prerequisiteTimes = []
-    if (targets.length === 1 && targets[0] instanceof TaskResource && !recipe) {
-      promake.log(Verbosity.DEFAULT, 'Making', this)
-    }
-    for (let prerequisite of prerequisites) prerequisiteTimes.push(await promake._make(prerequisite))
-    const finiteTargetTimes: Array<number> = (targetTimes.filter(Number.isFinite): any)
-    if (!force && finiteTargetTimes.length === targetTimes.length && !this.runAtLeastOnce) {
-      const finitePrerequisiteTimes: Array<number> = (prerequisiteTimes.filter(Number.isFinite): any)
-      const minTargetTime = Math.min(...finiteTargetTimes)
-      const maxPrerequisiteTime = Math.max(...finitePrerequisiteTimes)
-      if (!prerequisites.length || minTargetTime > maxPrerequisiteTime) {
-        promake.log(Verbosity.DEFAULT, 'Nothing to be done for', this)
-        return
-      }
-    }
-    if (recipe) {
-      promake.log(Verbosity.DEFAULT, 'Making', this)
-      await recipe(this)
-    }
-    this.lastFinishTime = Date.now()
+  _make = async (): Promise<any> => {
+    throw new Error('not implemented, this is an abstract class')
   }
 
-  make = (options: MakeOptions = {}): Promise<any> => {
-    return this.promise = this._make(options)
+  make = (): Promise<any> => {
+    return this.promise = this._make()
   }
 
   description: (() => ?string) & ((newDescription: string) => Rule) = function (newDescription?: string): any {

@@ -199,6 +199,33 @@ describe('Promake', () => {
       })
     })
   })
+  describe('.hashRule', () => {
+    it('resolves and normalizes file targets', () => {
+      const {rule, hashRule} = new Promake()
+      const fooRule = hashRule('md5', 'foo', ['bar'], () => {})
+      const barRule = hashRule('md5', path.resolve('somedir/../bar'), ['bar'], () => {})
+
+      expect(rule(path.resolve('foo'))).to.equal(fooRule)
+      expect(rule('bar')).to.equal(barRule)
+    })
+    it('throws when invalid target types are given', () => {
+      const {hashRule} = new Promake()
+      expect(() => hashRule('md5', 2, ['bar'], () => {})).to.throw(RuntimeError)
+      expect(() => hashRule('md5', ['foo'], ['bar'], () => {})).to.throw(RuntimeError)
+      expect(() => hashRule('md5', () => {}, () => {})).to.throw(RuntimeError)
+    })
+    it('throws when invalid prerequisite types are given', () => {
+      const {hashRule} = new Promake()
+      expect(() => hashRule('md5', 'hello', 2, () => {})).to.throw(RuntimeError)
+      expect(() => hashRule('md5', 'hello', [2], () => {})).to.throw(RuntimeError)
+      expect(() => hashRule('md5', 'hello', [() => {}], () => {})).to.throw(RuntimeError)
+    })
+    it ('throws when a rule for a given target already exists', () => {
+      const {rule, hashRule} = new Promake()
+      rule('foo', () => {})
+      expect(() => hashRule('md5', 'foo', ['bar'], () => {})).to.throw(Error)
+    })
+  })
   describe('.cli', () => {
     it('runs prerequisites that are missing', async () => {
       const {rule, task, cli} = new Promake()
@@ -280,13 +307,15 @@ describe('Promake', () => {
     })
     it('prints usage and task list when no targets are requested', async () => {
       const {stderr} = await exec('babel-node promake -v', {cwd})
-      expect(stderr).to.contain(`
+      expect(String(stderr).replace(/\s*$/mg, '')).to.contain(`
 Tasks:
   build             build server and client
-  build:client      
-  build:server      
-  clean             remove all build output
-`)
+  build:ci          build server and client in CI
+  build:client
+  build:client:ci
+  build:server
+  build:server:ci
+  clean             remove all build output`)
     })
     it('throws an error when run with an invalid target', async () => {
       let stderr = ''
@@ -321,6 +350,34 @@ Tasks:
       const {stdout, stderr} = await exec('babel-node promake build --quiet', {cwd})
       expect(stdout).to.match(/^\s*$/m)
       expect(stderr).to.match(/^\s*$/m)
+    })
+    describe('hash rules', () => {
+      it('builds after clean', async () => {
+        await exec('babel-node promake clean build:ci', {cwd})
+        expect(await fs.pathExists('test/integration/build/server.hash')).to.be.true
+        expect(await fs.pathExists('test/integration/build/universal.hash')).to.be.true
+        expect(await fs.pathExists('test/integration/build/client.hash')).to.be.true
+        expect(await fs.pathExists('test/integration/build/assets/client.bundle.js')).to.be.true
+        expect(await fs.pathExists('test/integration/build/server/index.js')).to.be.true
+        expect(await fs.pathExists('test/integration/build/server/foo/index.js')).to.be.true
+        expect(await fs.pathExists('test/integration/build/universal/index.js')).to.be.true
+        expect(await fs.pathExists('test/integration/build/universal/foo/index.js')).to.be.true
+      })
+      it("doesn't rebuild after build", async () => {
+        await exec('babel-node promake clean build:ci', {cwd})
+        const {stderr} = await exec('babel-node promake build:ci', {cwd})
+        expect(stderr).to.match(/nothing to be done for build\/server.hash/i)
+        expect(stderr).to.match(/nothing to be done for build\/universal.hash/i)
+        expect(stderr).to.match(/nothing to be done for build\/client.hash/i)
+      })
+      it("rebuilds when hash doesn't match", async () => {
+        await exec('babel-node promake clean build:ci', {cwd})
+        await fs.writeFile('test/integration/build/server.hash', 'blahblahblah', 'utf8')
+        const {stderr} = await exec('babel-node promake build:ci', {cwd})
+        expect(stderr).not.to.match(/nothing to be done for build\/server.hash/i)
+        expect(stderr).to.match(/nothing to be done for build\/universal.hash/i)
+        expect(stderr).to.match(/nothing to be done for build\/client.hash/i)
+      })
     })
   })
 })

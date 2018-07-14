@@ -13,6 +13,7 @@ Promise-based JS make clone that can target anything, not just files
 - [API Reference](#api-reference)
   * [`class Promake`](#class-promake)
     + [`rule(targets, prerequisites, recipe)`](#ruletargets-prerequisites-recipe)
+    + [`hashRule(algorithm, target, prerequisites, recipe)`](#hashrulealgorithm-target-prerequisites-recipe)
     + [`task(name, [prerequisites], [recipe])`](#taskname-prerequisites-recipe)
     + [`exec(command, [options])`](#execcommand-options)
     + [`spawn(command, [args], [options])`](#spawncommand-args-options)
@@ -143,6 +144,44 @@ The created [`Rule`](#class Rule).
 
 You can get the `Rule` for a given target by calling `rule(target)` (without `prerequisites` or `recipe`), but it will
 throw and `Error` if no such `Rule` exists, or you call it with multiple targets.
+
+### `hashRule(algorithm, target, prerequisites, [recipe], [options])`
+
+Creates a rule that determines if it needs to be run by testing if the hash of
+the prerequisites has changed (is different than the previous has written in
+`target`, or `target` doesn't exist yet).  After it does run, it will write the
+hash to `target`.
+
+This was created to help with CI builds where timestamps can't be used to
+determine whether something cached from the previous build needs to be rebuilt.
+
+##### `algorithm` (required)
+
+The [`crypto.createHash`](http://devdocs.io/node/crypto#crypto_crypto_createhash_algorithm_options) algorithm to use.
+
+##### `target` (required)
+This must be a `string` or `FileResource`, to which the hash of the
+`prerequisites` will be written.
+
+##### `prerequisites` (required)
+This must be an array of strings (file paths) or objects conforming to [the `HashResource` interface](#the-hashresource-interface)
+**Warning**: glob patterns (e.g. `src/**/*.js`) in `targets` or `prerequisites` will not be expanded; instead you must
+glob yourself and pass in the array of matching files.  See [Glob Files](#glob-files) for an example of how to do so.
+
+##### `recipe` (optional)
+A function that should ensure that `targets` get created or updated.  It will be called with one argument: the
+[`Rule`](#class-rule) being run.
+
+If `recipe` returns a `Promise`,
+`promake` will wait for it to resolve before moving on to the next rule or task.  If the `recipe` throws an Error or
+returns a `Promise` that rejects, the build will fail.
+
+##### `options` (optional)
+* `runAtLeastOnce` - if true, the `recipe` will be run at least once, even if the `targets` are apparently up-to-date.
+  This is useful for rules that need to look at the contents of targets to decide whether to update them.
+
+#### Returns
+The created [`Rule`](#class Rule).
 
 ### `task(name, [prerequisites], [recipe])`
 
@@ -315,6 +354,19 @@ Currently, instances need to define only one method:
 
 If the resource doesn't exist, the returned `Promise` should resolve to `null` or `undefined`.
 Otherwise, it should resolve to the resource's last modified time, in milliseconds.
+
+## The `HashResource` interface
+
+This is an abstraction that allows `promake` to apply the same build logic to input and output resources of any type,
+not just files.  (Internally, `promake` converts all `strings` in `targets` and `prerequisites` to `FileResource`s.)
+
+Currently, instances need to define only one method:
+
+##### `updateHash(hash: Hash): Promise<any>`
+
+If the resource exists, the given `hash` should be updated with whatever data
+from the resource is relevant (e.g. the contents of a file, which is what
+`FileResource`'s implementation of `updateHash` does)
 
 # How to
 
@@ -588,4 +640,3 @@ task('clean', () => fs.remove('build'))
 
 cli()
 ```
-

@@ -7,11 +7,11 @@ const fs = require('fs-extra')
 
 const serverSourceFiles = glob('src/server/**/*.js')
 const serverBuildFiles = serverSourceFiles.map(file => file.replace(/^src/, 'build'))
-const serverPrerequistes = [...serverSourceFiles, '.babelrc', ...glob('src/server/**/.babelrc')]
+const serverPrerequisites = [...serverSourceFiles, '.babelrc', ...glob('src/server/**/.babelrc')]
 
 const universalSourceFiles = glob('src/universal/**/*.js')
 const universalBuildFiles = universalSourceFiles.map(file => file.replace(/^src/, 'build'))
-const universalPrerequistes = [...universalSourceFiles, '.babelrc', ...glob('src/universal/**/.babelrc')]
+const universalPrerequisites = [...universalSourceFiles, '.babelrc', ...glob('src/universal/**/.babelrc')]
 
 const clientPrerequisites = [
   ...universalSourceFiles,
@@ -24,21 +24,32 @@ const clientBuildFiles = [
   'build/assets/client.bundle.js',
 ]
 
-const {rule, task, cli, exec, spawn} = new Promake()
+const {rule, hashRule, task, cli, exec, spawn} = new Promake()
 
-rule(serverBuildFiles, serverPrerequistes, () => exec('babel src/server/ --out-dir build/server'))
-rule(universalBuildFiles, universalPrerequistes, () => exec('babel src/universal/ --out-dir build/universal'))
-rule(clientBuildFiles, clientPrerequisites, async () => {
+const serverRecipe = () => exec('babel src/server/ --out-dir build/server')
+rule(serverBuildFiles, serverPrerequisites, serverRecipe)
+const universalRecipe = () => exec('babel src/universal/ --out-dir build/universal')
+rule(universalBuildFiles, universalPrerequisites, universalRecipe)
+const clientRecipe = async () => {
   await fs.mkdirs('build')
   await spawn('webpack', ['--progress', '--colors'])
-})
+}
+rule(clientBuildFiles, clientPrerequisites, clientRecipe)
+
+hashRule('md5', 'build/server.hash', serverPrerequisites, serverRecipe)
+hashRule('md5', 'build/universal.hash', universalPrerequisites, universalRecipe)
+hashRule('md5', 'build/client.hash', clientPrerequisites, clientRecipe)
 
 task('build', [
   task('build:server', [...serverBuildFiles, ...universalBuildFiles]),
   task('build:client', clientBuildFiles),
 ]).description('build server and client')
 
+task('build:ci', [
+  task('build:server:ci', ['build/server.hash', 'build/universal.hash']),
+  task('build:client:ci', ['build/client.hash']),
+]).description('build server and client in CI')
+
 task('clean', () => fs.remove('build')).description('remove all build output')
 
 cli()
-

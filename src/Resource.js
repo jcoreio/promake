@@ -7,4 +7,3 @@ export interface Resource {
    */
   lastModified(): Promise<?number>;
 }
-

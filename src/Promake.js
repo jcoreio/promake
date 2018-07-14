@@ -5,6 +5,8 @@ import type {Type} from 'flow-runtime'
 import type {Resource} from './Resource'
 import FileResource from './FileResource'
 import Rule from './Rule'
+import LastModifiedRule from './LastModifiedRule'
+import HashRule from './HashRule'
 import TaskResource from './TaskResource'
 import {exec, spawn} from 'promisify-child-process'
 import chalk from 'chalk'
@@ -69,11 +71,13 @@ class Promake {
     return result
   }
 
-  _make = async (resource: Resource): Promise<?number> => {
+  _make = async (resource: any): Promise<?number> => {
     const rule = this.rules.get(resource)
     if (!rule) {
-      let time = await resource.lastModified()
-      if (Number.isFinite(time)) return time
+      if (typeof resource.lastModified === 'function') {
+        let time = await resource.lastModified()
+        if (Number.isFinite(time)) return time
+      }
       throw new Error(`No rule found to make ${resource.toString()}`)
     }
     await rule
@@ -130,10 +134,37 @@ class Promake {
       if (!rule) throw new Error(`No rule found for ${target.toString()}`)
       return rule
     }
-    const rule = new Rule({
+    const rule = new LastModifiedRule({
       promake: this,
       targets: this._normalizeResources(targets),
       prerequisites: prerequisites ? this._normalizePrerequisites(prerequisites) : [],
+      recipe,
+      runAtLeastOnce: Boolean(options && options.runAtLeastOnce),
+    })
+    for (let target of rule.targets) {
+      if (this.rules.has(target)) throw new Error(`A rule for ${target.toString()} already exists`)
+      this.rules.set(target, rule)
+    }
+    return rule
+  }
+
+  hashRule = (algorithm: string, target: string | FileResource, prerequisites?: any, recipe?: (rule: Rule) => ?Promise<any>, options?: {runAtLeastOnce?: boolean}): Rule => {
+    const finalTarget: FileResource = (this._normalizeResource(target): any)
+    if (typeof prerequisites === 'function') {
+      options = (recipe: any)
+      recipe = (prerequisites: any)
+      prerequisites = null
+    }
+    if (!prerequisites && !recipe) {
+      const rule = this.rules.get(finalTarget)
+      if (!rule) throw new Error(`No rule found for ${target.toString()}`)
+      return rule
+    }
+    const rule = new HashRule({
+      hashAlgorithm: algorithm,
+      promake: this,
+      targets: [finalTarget],
+      prerequisites: prerequisites ? (this._normalizePrerequisites(prerequisites): $ReadOnlyArray<any>) : [],
       recipe,
       runAtLeastOnce: Boolean(options && options.runAtLeastOnce),
     })
@@ -158,7 +189,7 @@ class Promake {
     if (this.taskResources.has(name)) throw new Error(`A task named ${name} already exists`)
     const target = new TaskResource({name, promake: this})
     this.taskResources.set(name, target)
-    const rule = new Rule({
+    const rule = new LastModifiedRule({
       promake: this,
       targets: [target],
       prerequisites: prerequisites ? this._normalizePrerequisites((prerequisites: any)) : [],
@@ -238,4 +269,3 @@ Tasks:
 }
 
 module.exports = Promake
-
