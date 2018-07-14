@@ -68,6 +68,7 @@ You tell it to run the CLI in your script, instead of running your script via a 
 ### Install promake
 
 ```sh
+<<<<<<< HEAD
 npm install --save-dev promake
 ```
 
@@ -326,6 +327,31 @@ The normalized array of resources that must be made before running this rule.
 Any args for this rule (from the [CLI](#cliargv--processargv-options), usually)
 
 ### `description([newDescription])`
+=======
+npm i -g howardroark/pollinate
+pollinate https://github.com/jedwards1211/es2015-library-skeleton.git --keep-history --name <package name> --author <your name> --organization <github organization> --description <package description>
+cd <package name>
+npm i
+```
+
+## Tools used
+
+* babel 6
+* babel-preset-env
+* mocha
+* chai
+* istanbul
+* nyc
+* babel-plugin-istanbul
+* eslint
+* eslint-watch
+* flow
+* flow-watch
+* pre-commit (runs eslnt and flow)
+* semantic-release
+* Travis CI
+* Coveralls
+>>>>>>> 5187d099e36470672f6fcbc42771cf63ace08e89
 
 Gets or sets the description of this rule.  If you provide an argument,
 sets the description and returns this rule.  Otherwise, returns the

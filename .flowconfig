@@ -3,6 +3,9 @@
 <PROJECT_ROOT>/node_modules/child-process-async/.*
 <PROJECT_ROOT>/node_modules/babel-plugin-flow-runtime/.*
 <PROJECT_ROOT>/node_modules/.*/tests?/.*\.json
+<PROJECT_ROOT>/es/.*
+<PROJECT_ROOT>/node_modules/fbjs/.*
+<PROJECT_ROOT>/node_modules/.*/fbjs/.*
 
 [include]
 ./src

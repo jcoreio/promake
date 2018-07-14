@@ -1,9 +1,49 @@
 {
-  "presets": ["es2015", "stage-1", "flow"],
-  "plugins": ["transform-runtime", "transform-decorators-legacy", ["flow-runtime", {"assert": false}]],
+  "plugins": [
+    "syntax-dynamic-import",
+    "transform-class-properties",
+    "transform-export-extensions",
+    "transform-object-rest-spread",
+    "transform-decorators-legacy",
+    ["flow-runtime", {"assert": false}]
+  ],
+  "presets": [
+    "flow"
+  ],
   "env": {
     "test": {
-      "plugins": ["istanbul"]
-    }
+      "presets": [
+        ["env", {"targets": {"node": "current"}}],
+        "flow"
+      ],
+      "plugins": [
+        "transform-runtime",
+        "transform-decorators-legacy",
+        ["flow-runtime", {"assert": false}]
+      ]
+    },
+    "coverage": {
+      "presets": [
+        ["env", {"targets": {"node": "current"}}],
+        "flow"
+      ],
+      "plugins": [
+        "transform-runtime",
+        "transform-decorators-legacy",
+        ["flow-runtime", {"assert": false}],
+        "istanbul"
+      ]
+    },
+    "es5": {
+      "presets": [
+        ["env", {"forceAllTransforms": true}],
+        "stage-1", "flow"
+      ],
+      "plugins": [
+        "transform-runtime",
+        "transform-decorators-legacy",
+        ["flow-runtime", {"assert": false}]
+      ]
+    },
   }
 }
