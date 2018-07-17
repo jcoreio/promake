@@ -200,7 +200,7 @@ class Promake {
   }
 
   printUsage = () => {
-    const {version, homepage} = require('../package.json')
+    const {version, homepage} = require('./packageInfo')
     const tasks = [...this.taskResources.keys()].sort()
     const taskColumnWidth = Math.max(16, ...tasks.map(name => name.length)) + 2
     process.stderr.write(`promake CLI, version ${version}
