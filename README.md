@@ -12,7 +12,7 @@ Promise-based JS make clone that can target anything, not just files
   * [Quick start](#quick-start)
 - [API Reference](#api-reference)
   * [`class Promake`](#class-promake)
-    + [`rule(targets, prerequisites, recipe)`](#ruletargets-prerequisites-recipe)
+    + [`rule(targets, [prerequisites], [recipe], [options])`](#ruletargets-prerequisites-recipe-options)
     + [`hashRule(algorithm, target, prerequisites, [recipe], [options])`](#hashrulealgorithm-target-prerequisites-recipe-options)
     + [`task(name, [prerequisites], [recipe])`](#taskname-prerequisites-recipe)
     + [`exec(command, [options])`](#execcommand-options)
