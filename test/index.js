@@ -6,7 +6,7 @@ import sinon from 'sinon'
 import {exec} from 'promisify-child-process'
 import fs from 'fs-extra'
 import path from 'path'
-import {RuntimeError} from 'flow-runtime'
+import {RuntimeError, RuntimeTypeError} from 'flow-runtime'
 
 import Promake from '../src'
 import TestResource from './TestResource'
@@ -224,6 +224,18 @@ describe('Promake', () => {
       const {rule, hashRule} = new Promake()
       rule('foo', () => {})
       expect(() => hashRule('md5', 'foo', ['bar'], () => {})).to.throw(Error)
+    })
+    it('accepts custom HashResource implementations as prerequisites', () => {
+      const {hashRule} = new Promake()
+      hashRule('md5', 'foo', [{
+        updateHash(hash: any): any {
+          hash.update('blargh')
+        }
+      }], () => {})
+    })
+    it('rejects bad HashResource implementations as prerequisites', () => {
+      const {hashRule} = new Promake()
+      expect(() => hashRule('md5', 'foo', [{}], () => {})).to.throw(RuntimeTypeError)
     })
   })
   describe('.cli', () => {

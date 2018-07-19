@@ -19,10 +19,18 @@ import padEnd from 'lodash.padend'
 type Resources = Array<string | Resource> | string | Resource
 
 type Targets = Resources
-type Prerequisites = Array<string | Resource | Rule> | string | Resource | Rule
 
-const ResourcesType = (reify: Type<Resources>)
-const PrerequisitesType = (reify: Type<Prerequisites>)
+type BasicResource = {
+  lastModified(): any,
+}
+
+type BasicHashResource = {
+  updateHash(): any,
+}
+
+const ResourcesType = (reify: Type<Array<string | BasicResource> | string | BasicResource>)
+const PrerequisitesType = (reify: Type<Array<string | BasicResource | Rule> | string | BasicResource | Rule>)
+const HashPrerequisitesType = (reify: Type<Array<string | BasicHashResource | Rule> | string | BasicHashResource | Rule>)
 
 type CliOptions = {
   exit?: boolean,
@@ -30,6 +38,16 @@ type CliOptions = {
 
 class Promake {
   static VERBOSITY = Verbosity
+
+  static checkResource(resource: any, path: string) {
+    if (typeof resource === 'string') return
+    if (!(resource instanceof Object)) {
+      throw new Error('Resource must be a string or conform to the Resource interface')
+    }
+    if (typeof resource.lastModified !== 'function') {
+      throw new Error('resource ')
+    }
+  }
 
   fileResources: Map<string, FileResource> = new Map()
   taskResources: Map<string, TaskResource> = new Map()
@@ -60,6 +78,13 @@ class Promake {
 
   _normalizePrerequisites = (prerequisites: any): Array<Resource> => {
     PrerequisitesType.assert(prerequisites)
+    if (Array.isArray(prerequisites)) return [].concat(...prerequisites.map(this._normalizePrerequisite))
+    const normalized = this._normalizePrerequisite(prerequisites)
+    return Array.isArray(normalized) ? normalized : [normalized]
+  }
+
+  _normalizeHashPrerequisites = (prerequisites: any): Array<Resource> => {
+    HashPrerequisitesType.assert(prerequisites)
     if (Array.isArray(prerequisites)) return [].concat(...prerequisites.map(this._normalizePrerequisite))
     const normalized = this._normalizePrerequisite(prerequisites)
     return Array.isArray(normalized) ? normalized : [normalized]
@@ -164,7 +189,7 @@ class Promake {
       hashAlgorithm: algorithm,
       promake: this,
       targets: [finalTarget],
-      prerequisites: prerequisites ? (this._normalizePrerequisites(prerequisites): $ReadOnlyArray<any>) : [],
+      prerequisites: prerequisites ? (this._normalizeHashPrerequisites(prerequisites): $ReadOnlyArray<any>) : [],
       recipe,
       runAtLeastOnce: Boolean(options && options.runAtLeastOnce),
     })
