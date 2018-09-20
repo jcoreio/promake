@@ -286,7 +286,7 @@ describe('Promake', () => {
 
       expect(error).to.be.an.instanceOf(Error)
     })
-    it('passes args to rules', async () => {
+    it('passes args with -- to rules', async () => {
       const {rule, task, cli} = new Promake()
 
       const foo = new TestResource('foo')
@@ -309,6 +309,29 @@ describe('Promake', () => {
       expect(fooArgs).to.deep.equal(['a', '--', 'b'])
       expect(barArgs).to.deep.equal(['c', 'd'])
     })
+    it('passes args without -- to rules', async () => {
+      const {rule, task, cli} = new Promake()
+
+      const foo = new TestResource('foo')
+      const qux = new TestResource('qux')
+      rule(foo, () => foo.touch())
+      rule(qux, () => qux.touch())
+
+      let fooArgs: ?Array<string>
+      let quxArgs: ?Array<string>
+
+      task('foo', foo, rule => fooArgs = rule.args)
+      task('qux', qux, rule => quxArgs = rule.args)
+
+      await cli([
+        'node', 'promake.js',
+        'foo', 'bar', 'baz',
+        'qux', 'blah',
+      ], {exit: false})
+
+      expect(fooArgs).to.deep.equal(['bar', 'baz'])
+      expect(quxArgs).to.deep.equal(['blah'])
+    })
   })
   describe('integration test', function () {
     this.timeout(15 * 60000)
@@ -328,15 +351,6 @@ Tasks:
   build:server
   build:server:ci
   clean             remove all build output`)
-    })
-    it('throws an error when run with an invalid target', async () => {
-      let stderr = ''
-      const child = exec('babel-node promake clean glab', {cwd})
-      child.stderr.on('data', chunk => stderr += chunk.toString('utf8'))
-      let code
-      await child.catch(error => code = error.code)
-      expect(code).to.equal(1)
-      expect(stderr).to.match(/Error: no task or file found for glab/)
     })
     it('builds after clean', async () => {
       await exec('babel-node promake clean build', {cwd})

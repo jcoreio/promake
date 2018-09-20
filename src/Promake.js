@@ -276,7 +276,15 @@ Tasks:
             break
           }
         } else {
-          targets.push(lastTarget = this._normalizeName(argv[i]))
+          try {
+            targets.push(lastTarget = this._normalizeName(argv[i]))
+          } catch (error) {
+            if (lastTarget) {
+              this.rule(lastTarget).args.push(argv[i])
+            } else {
+              throw error
+            }
+          }
         }
       }
       if (!targets.length) this.printUsage()

@@ -254,7 +254,14 @@ The command-line arguments.  May include:
 * File names - rules for these files will be run, in the order requested
 * `--quiet`, `-q`: suppress output
 
-You can pass args to the rule for a target by adding `-- args...` after the rule:
+As long as none of the args you want to pass don't correspond to a target name,
+you can just add them after the target:
+```
+runDocker --rm --env FOO=BAR
+```
+
+But you can pass any arbitrary args to the rule for a target by adding
+`-- args...` after the rule:
 ```
 runDocker -- --rm --env FOO=BAR
 ```
