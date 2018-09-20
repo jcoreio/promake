@@ -301,7 +301,7 @@ describe('Promake', () => {
       task('bar', bar, rule => barArgs = rule.args)
 
       await cli([
-        'node', 'promake.js', '--',
+        'node', 'promake.js',
         'foo', '--', 'a', '----', 'b', '--',
         'bar', '--', 'c', 'd'
       ], {exit: false})

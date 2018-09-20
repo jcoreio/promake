@@ -259,21 +259,26 @@ Tasks:
             this.rule(lastTarget).args.push(argv[i].replace(/^--(-+)$/, '$1'))
           }
         } else if (argv[i].startsWith('-')) {
-          switch (argv[i]) {
-          case '--':
-            if (lastTarget) {
+          if (lastTarget) {
+            if (argv[i] === '--') {
               this.rule(lastTarget).args = []
               ruleArgsMode = true
+            } else {
+              this.rule(lastTarget).args.push(argv[i])
             }
-            break
-          case '-q':
-          case '--quiet':
-            this.verbosity = Verbosity.QUIET
-            break
-          case '-v':
-          case '--verbose':
-            this.verbosity = Verbosity.HIGH
-            break
+          } else {
+            switch (argv[i]) {
+            case '-q':
+            case '--quiet':
+              this.verbosity = Verbosity.QUIET
+              break
+            case '-v':
+            case '--verbose':
+              this.verbosity = Verbosity.HIGH
+              break
+            default:
+              throw new Error(`unrecognized option: ${argv[i]}`)
+            }
           }
         } else {
           try {
