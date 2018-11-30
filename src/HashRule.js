@@ -55,11 +55,11 @@ class HashRule extends Rule {
       if (error.code !== 'ENOENT') throw error
     }
     if (lastDigest === digest) {
-      promake.log(Verbosity.DEFAULT, 'Nothing to be done for', this, 'hash:', lastDigest)
+      promake.log(Verbosity.DEFAULT, 'Nothing to be done for', this.toString(), 'hash:', lastDigest)
       return
     }
     if (recipe) {
-      promake.log(Verbosity.DEFAULT, 'Making', this, 'hash:', lastDigest)
+      promake.log(Verbosity.DEFAULT, 'Making', this.toString(), 'hash:', lastDigest)
       await recipe(this)
     }
     await promisify(fs.writeFile)(file, digest, 'utf8')
