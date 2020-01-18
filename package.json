@@ -92,7 +92,7 @@
     "glob": "^7.1.2",
     "husky": "^0.14.3",
     "istanbul": "^0.4.5",
-    "mocha": "^6.0.0",
+    "mocha": "^7.0.0",
     "nyc": "^11.4.1",
     "rimraf": "^2.6.0",
     "semantic-release": "^15.7.1",
