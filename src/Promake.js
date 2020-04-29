@@ -1,4 +1,5 @@
 // @flow
+// @flow-runtime enable
 
 import {reify} from 'flow-runtime'
 import type {Type} from 'flow-runtime'
