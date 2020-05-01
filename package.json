@@ -103,7 +103,7 @@
   },
   "dependencies": {
     "babel-runtime": "^6.23.0",
-    "chalk": "^2.3.0",
+    "chalk": "^4.0.0",
     "es6-promisify": "^5.0.0",
     "flow-runtime": "^0.17.0",
     "lodash.padend": "^4.6.1",
