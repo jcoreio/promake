@@ -88,7 +88,7 @@
     "flow-bin": "^0.98.0",
     "flow-copy-source": "^1.2.1",
     "flow-watch": "^1.1.0",
-    "fs-extra": "^5.0.0",
+    "fs-extra": "^9.0.0",
     "glob": "^7.1.2",
     "husky": "^0.14.3",
     "istanbul": "^0.4.5",
