@@ -107,6 +107,6 @@
     "es6-promisify": "^5.0.0",
     "flow-runtime": "^0.17.0",
     "lodash.padend": "^4.6.1",
-    "promisify-child-process": "^2.0.0"
+    "promisify-child-process": "^4.0.0"
   }
 }
