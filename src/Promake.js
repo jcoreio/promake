@@ -110,6 +110,11 @@ class Promake {
     return resource.lastModified()
   }
 
+  make = async (target: any): Promise<void> => {
+    if (typeof target === 'string') target = this._normalizeName(target)
+    await this._make(target)
+  }
+
   log = (verbosity: VerbosityLevel, ...args: any) => {
     if (this.verbosity >= verbosity) console.error(chalk.bold('[promake]'), ...args) // eslint-disable-line no-console
   }

@@ -15,6 +15,7 @@ Promise-based JS make clone that can target anything, not just files
     + [`rule(targets, [prerequisites], [recipe], [options])`](#ruletargets-prerequisites-recipe-options)
     + [`hashRule(algorithm, target, prerequisites, [recipe], [options])`](#hashrulealgorithm-target-prerequisites-recipe-options)
     + [`task(name, [prerequisites], [recipe])`](#taskname-prerequisites-recipe)
+    + [`make(target)`](#target)
     + [`exec(command, [options])`](#execcommand-options)
     + [`spawn(command, [args], [options])`](#spawncommand-args-options)
     + [`cli(argv = process.argv, [options])`](#cliargv--processargv-options)
@@ -225,6 +226,17 @@ The created [`Rule`](#class Rule).
 
 Calling `task(name)` without any `prerequisites` or `recipe` looks up and returns the previously created task `Rule` for
 `name`, but *it will throw an `Error`* if no such task exists.
+
+### `make(target)`
+
+Makes the given target if necessary.
+
+##### `target`
+The name of a task or file, or an object conforming to the `Resource` interface
+
+#### Returns
+A `Promise` that will be resolved when the target recipe succeeds (or doesn't need to be rerun) or rejects when the target
+recipe fails.
 
 ### `exec(command, [options])`
 

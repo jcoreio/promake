@@ -33,7 +33,7 @@ class Rule {
   }
 
   make = (): Promise<any> => {
-    return this.promise = this._make()
+    return this.promise = this._make().finally(() => this.promise = null)
   }
 
   description: (() => ?string) & ((newDescription: string) => Rule) = function (newDescription?: string): any {
