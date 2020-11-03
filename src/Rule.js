@@ -2,6 +2,7 @@
 
 import type Promake from './Promake'
 import type {Resource} from './Resource'
+import ExecutionContext from './ExecutionContext'
 
 export type Props = {
   promake: Promake,
@@ -20,7 +21,6 @@ class Rule {
   runAtLeastOnce: boolean = false
 
   lastFinishTime: ?number
-  promise: ?Promise<any>
 
   _description: ?string
 
@@ -28,25 +28,28 @@ class Rule {
     Object.assign(this, props)
   }
 
-  _make = async (): Promise<any> => {
+  _make = async (context: ExecutionContext): Promise<any> => {
     throw new Error('not implemented, this is an abstract class')
   }
 
-  make = (): Promise<any> => {
-    return this.promise = this._make().finally(() => this.promise = null)
+  make = (context?: ExecutionContext = new ExecutionContext()): Promise<any> => {
+    return context.make(this, this._make)
   }
+
+  then = (onResolve: ?(() => any), onReject?: (error: Error) => any): Promise<any> =>
+    this.make().then(onResolve, onReject)
+
+  catch = (onReject: (error: Error) => any): Promise<any> =>
+    this.make().catch(onReject)
+
+  finally = (onSettled: () => any): Promise<any> =>
+    this.make().finally(onSettled)
 
   description: (() => ?string) & ((newDescription: string) => Rule) = function (newDescription?: string): any {
     if (!arguments.length) return this._description
     this._description = newDescription
     return this
   }.bind(this)
-
-  then = (onResolve: ?(() => any), onReject?: (error: Error) => any): Promise<any> => {
-    let {promise} = this
-    if (!promise) promise = this.make()
-    return promise.then((onResolve: any), onReject)
-  }
 
   toString(): string {
     if (this.targets.length > 1) return `${String(this.targets[0])} (+${this.targets.length} more)`

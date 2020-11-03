@@ -16,6 +16,7 @@ import Verbosity from './Verbosity'
 import type {VerbosityLevel} from './Verbosity'
 import type {Readable} from 'stream'
 import padEnd from 'lodash.padend'
+import ExecutionContext from './ExecutionContext'
 
 type Resources = Array<string | Resource> | string | Resource
 
@@ -97,7 +98,7 @@ class Promake {
     return result
   }
 
-  _make = async (resource: any): Promise<?number> => {
+  _make = async (resource: any, context: ExecutionContext): Promise<?number> => {
     const rule = this.rules.get(resource)
     if (!rule) {
       if (typeof resource.lastModified === 'function') {
@@ -106,13 +107,13 @@ class Promake {
       }
       throw new Error(`No rule found to make ${resource.toString()}`)
     }
-    await rule
+    await rule.make(context)
     return resource.lastModified()
   }
 
-  make = async (target: any): Promise<void> => {
+  make = async (target: any, context?: ExecutionContext = new ExecutionContext()): Promise<void> => {
     if (typeof target === 'string') target = this._normalizeName(target)
-    await this._make(target)
+    await this._make(target, context)
   }
 
   log = (verbosity: VerbosityLevel, ...args: any) => {
@@ -299,7 +300,7 @@ Tasks:
         }
       }
       if (!targets.length) this.printUsage()
-      for (let target of targets) await this._make(target)
+      for (let target of targets) await this.make(target)
 
       if (options.exit !== false) process.exit(0)
     } catch (error) {

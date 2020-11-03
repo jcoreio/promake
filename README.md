@@ -7,15 +7,19 @@
 
 Promise-based JS make clone that can target anything, not just files
 
-- [promake](#promake)
+<!-- toc -->
+
   * [Why promake? Why not `jake`, `sake`, etc?](#why-promake--why-not-jake-sake-etc)
-  * [Quick start](#quick-start)
+- [Quick start](#quick-start)
+    + [Install promake](#install-promake)
+    + [Create a make script](#create-a-make-script)
+    + [Run the make script](#run-the-make-script)
 - [API Reference](#api-reference)
   * [`class Promake`](#class-promake)
     + [`rule(targets, [prerequisites], [recipe], [options])`](#ruletargets-prerequisites-recipe-options)
     + [`hashRule(algorithm, target, prerequisites, [recipe], [options])`](#hashrulealgorithm-target-prerequisites-recipe-options)
     + [`task(name, [prerequisites], [recipe])`](#taskname-prerequisites-recipe)
-    + [`make(target)`](#target)
+    + [`make(target)`](#maketarget)
     + [`exec(command, [options])`](#execcommand-options)
     + [`spawn(command, [args], [options])`](#spawncommand-args-options)
     + [`cli(argv = process.argv, [options])`](#cliargv--processargv-options)
@@ -23,19 +27,19 @@ Promise-based JS make clone that can target anything, not just files
     + [`logStream(verbosity, stream)`](#logstreamverbosity-stream)
     + [`static Verbosity`](#static-verbosity)
   * [`class Rule`](#class-rule)
-    + [`promake`](#promake-2)
+    + [`promake`](#promake)
     + [`targets`](#targets)
     + [`prerequisites`](#prerequisites)
     + [`args`](#args)
     + [`description([newDescription])`](#descriptionnewdescription)
+    + [`make(executionContext?: ExecutionContext)`](#makeexecutioncontext-executioncontext)
     + [`then(onResolved, [onRejected])`](#thenonresolved-onrejected)
     + [`catch(onRejected)`](#catchonrejected)
+    + [`finally(onFinally)`](#finallyonfinally)
   * [The `Resource` interface](#the-resource-interface)
-    + [`lastModified()`](#lastmodified-promisenumber)
   * [The `HashResource` interface](#the-hashresource-interface)
-    + [`updateHash(hash: Hash): Promise`](#updatehashhash-hash-promise)
 - [How to](#how-to)
-  * [Glob Files](#glob-files)
+  * [Glob files](#glob-files)
   * [Perform File System Operations](#perform-file-system-operations)
   * [Execute Shell Commands](#execute-shell-commands)
   * [Pass args through to a shell command](#pass-args-through-to-a-shell-command)
@@ -45,6 +49,8 @@ Promise-based JS make clone that can target anything, not just files
 - [Examples](#examples)
   * [Transpiling files with Babel](#transpiling-files-with-babel)
   * [Basic Webapp](#basic-webapp)
+
+<!-- tocstop -->
 
 ## Why promake?  Why not `jake`, `sake`, etc?
 
@@ -352,13 +358,23 @@ Gets or sets the description of this rule.  If you provide an argument,
 sets the description and returns this rule.  Otherwise, returns the
 description.
 
+### `make(executionContext?: ExecutionContext)`
+
+Starts running this rule if it hasn't already been run in `executionContext`.  An `ExecutionContext` will be created
+if none was passed.  Returns a `Promise` that will resolve or reject when the rule finished running successfully or
+failed.
+
 ### `then(onResolved, [onRejected])`
 
-Starts running this rule if it isn't already, and calls `onResolved` when it finishes or `onReject` when it fails.
+Same as calling `make().then(onResolved, onRejected)`.
 
 ### `catch(onRejected)`
 
-Same as calling `then(undefined, onRejected)`.
+Same as calling `make().catch(onRejected)`.
+
+### `finally(onFinally)`
+
+Same as calling `make().finally(onFinally)`.
 
 ## The `Resource` interface
 

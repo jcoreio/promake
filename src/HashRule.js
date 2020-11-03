@@ -8,6 +8,7 @@ import type {HashResource} from './HashResource'
 import type FileResource from './FileResource'
 import Verbosity from './Verbosity'
 import promisify from 'es6-promisify'
+import type ExecutionContext from './ExecutionContext'
 
 export type Props = {
   hashAlgorithm: string,
@@ -34,7 +35,7 @@ class HashRule extends Rule {
     }
   }
 
-  _make = async (): Promise<any> => {
+  _make = async (context: ExecutionContext): Promise<any> => {
     const hash = createHash(this.hashAlgorithm)
     const {targets, promake, recipe} = this
     const prerequisites: $ReadOnlyArray<HashResource> = (this.prerequisites: any)
@@ -44,7 +45,7 @@ class HashRule extends Rule {
     if (typeof file !== 'string') throw new Error('missing targets[0].file')
 
     for (let prerequisite of prerequisites) {
-      await promake._make(prerequisite)
+      await promake._make(prerequisite, context)
       await prerequisite.updateHash(hash)
     }
     const digest = hash.digest('hex')
