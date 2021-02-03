@@ -398,13 +398,13 @@ describe('Promake', () => {
   })
   describe('integration test', function () {
     this.timeout(15 * 60000)
-    const cwd = path.resolve(__dirname, 'integration')
+    const promake = path.resolve(__dirname, 'integration', 'promake')
     it('cleans', async () => {
-      await exec(`node promake clean`, { cwd })
+      await exec(`babel-node ${promake} clean`)
       expect(await fs.pathExists('test/integration/promake/build')).to.be.false
     })
     it('prints usage and task list when no targets are requested', async () => {
-      const { stderr } = await exec(`node promake -v`, { cwd })
+      const { stderr } = await exec(`babel-node ${promake} -v`)
       expect(String(stderr).replace(/\s*$/gm, '')).to.contain(`
 Tasks:
   build             build server and client
@@ -416,7 +416,7 @@ Tasks:
   clean             remove all build output`)
     })
     it('builds after clean', async () => {
-      await exec(`node promake clean build`, { cwd })
+      await exec(`babel-node ${promake} clean build`)
       expect(
         await fs.pathExists('test/integration/build/assets/client.bundle.js')
       ).to.be.true
@@ -431,29 +431,27 @@ Tasks:
       ).to.be.true
     })
     it("doesn't rebuild after build", async () => {
-      await exec(`node promake clean build`, { cwd })
-      const { stderr } = await exec(`node promake build`, { cwd })
+      await exec(`babel-node ${promake} clean build`)
+      const { stderr } = await exec(`babel-node ${promake} build`)
       expect(stderr).to.match(/nothing to be done for build\/server/i)
       expect(stderr).to.match(/nothing to be done for build\/universal/i)
       expect(stderr).to.match(/nothing to be done for build\/assets/i)
     })
     it('outputs nothing when run with -q', async () => {
-      const { stdout, stderr } = await exec(`node promake build -q`, {
-        cwd,
-      })
+      const { stdout, stderr } = await exec(`babel-node ${promake} build -q`)
       expect(stdout).to.match(/^\s*$/m)
       expect(stderr).to.match(/^\s*$/m)
     })
     it('outputs nothing when run with --quiet', async () => {
-      const { stdout, stderr } = await exec(`node promake build --quiet`, {
-        cwd,
-      })
+      const { stdout, stderr } = await exec(
+        `babel-node ${promake} build --quiet`
+      )
       expect(stdout).to.match(/^\s*$/m)
       expect(stderr).to.match(/^\s*$/m)
     })
     describe('hash rules', () => {
       it('builds after clean', async () => {
-        await exec(`node promake clean build:ci`, { cwd })
+        await exec(`babel-node ${promake} clean build:ci`)
         expect(await fs.pathExists('test/integration/build/server.hash')).to.be
           .true
         expect(await fs.pathExists('test/integration/build/universal.hash')).to
@@ -475,20 +473,20 @@ Tasks:
         ).to.be.true
       })
       it("doesn't rebuild after build", async () => {
-        await exec(`node promake clean build:ci`, { cwd })
-        const { stderr } = await exec(`node promake build:ci`, { cwd })
+        await exec(`babel-node ${promake} clean build:ci`)
+        const { stderr } = await exec(`babel-node ${promake} build:ci`)
         expect(stderr).to.match(/nothing to be done for build\/server.hash/i)
         expect(stderr).to.match(/nothing to be done for build\/universal.hash/i)
         expect(stderr).to.match(/nothing to be done for build\/client.hash/i)
       })
       it("rebuilds when hash doesn't match", async () => {
-        await exec(`node promake clean build:ci`, { cwd })
+        await exec(`babel-node ${promake} clean build:ci`)
         await fs.writeFile(
           'test/integration/build/server.hash',
           'blahblahblah',
           'utf8'
         )
-        const { stderr } = await exec(`node promake build:ci`, { cwd })
+        const { stderr } = await exec(`babel-node ${promake} build:ci`)
         expect(stderr).not.to.match(
           /nothing to be done for build\/server.hash/i
         )
