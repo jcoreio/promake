@@ -1,6 +1,6 @@
 // @flow
 
-import type {Resource} from './Resource'
+import type { Resource } from './Resource'
 import Promake from './Promake'
 
 type Props = {
@@ -28,4 +28,3 @@ class TaskResource implements Resource {
 }
 
 module.exports = TaskResource
-

@@ -5,7 +5,6 @@ module.exports = {
   entry: './src/client/index.js',
   output: {
     path: path.resolve(__dirname, 'build', 'assets'),
-    filename: 'client.bundle.js'
-  }
+    filename: 'client.bundle.js',
+  },
 }
-

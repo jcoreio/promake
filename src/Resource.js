@@ -16,6 +16,9 @@ export const ResourceType: t.TypeAlias<Resource> = t.alias(
 )
 
 ResourceType.addConstraint((resource: any): ?string => {
-  if (typeof resource.lastModified !== 'function' || resource.lastModified.length !== 0)
+  if (
+    typeof resource.lastModified !== 'function' ||
+    resource.lastModified.length !== 0
+  )
     return 'must have a lastModified method that takes no arguments'
 })

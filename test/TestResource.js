@@ -1,6 +1,6 @@
 // @flow
 
-import type {Resource} from '../src/Resource'
+import type { Resource } from '../src/Resource'
 import delay from 'delay'
 
 export default class TestResource implements Resource {
@@ -13,7 +13,7 @@ export default class TestResource implements Resource {
 
   touch: () => Promise<number> = async (): Promise<number> => {
     await delay(10)
-    return this.mtime = Date.now()
+    return (this.mtime = Date.now())
   }
 
   lastModified: () => Promise<?number> = async (): Promise<?number> => {

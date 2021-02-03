@@ -1,76 +1,83 @@
 # promake
 
-[![Build Status](https://travis-ci.org/jcoreio/promake.svg?branch=master)](https://travis-ci.org/jcoreio/promake)
+[![CircleCI](https://circleci.com/gh/jcoreio/promake.svg?style=svg)](https://circleci.com/gh/jcoreio/promake)
 [![Coverage Status](https://codecov.io/gh/jcoreio/promake/branch/master/graph/badge.svg)](https://codecov.io/gh/jcoreio/promake)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
+[![npm version](https://badge.fury.io/js/promake.svg)](https://badge.fury.io/js/promake)
 
 Promise-based JS make clone that can target anything, not just files
+This is my personal skeleton for creating an ES2015 library npm package. You are welcome to use it.
 
 <!-- toc -->
 
-  * [Why promake? Why not `jake`, `sake`, etc?](#why-promake--why-not-jake-sake-etc)
-- [Quick start](#quick-start)
-    + [Install promake](#install-promake)
-    + [Create a make script](#create-a-make-script)
-    + [Run the make script](#run-the-make-script)
-- [API Reference](#api-reference)
-  * [`class Promake`](#class-promake)
-    + [`rule(targets, [prerequisites], [recipe], [options])`](#ruletargets-prerequisites-recipe-options)
-    + [`hashRule(algorithm, target, prerequisites, [recipe], [options])`](#hashrulealgorithm-target-prerequisites-recipe-options)
-    + [`task(name, [prerequisites], [recipe])`](#taskname-prerequisites-recipe)
-    + [`make(target)`](#maketarget)
-    + [`exec(command, [options])`](#execcommand-options)
-    + [`spawn(command, [args], [options])`](#spawncommand-args-options)
-    + [`cli(argv = process.argv, [options])`](#cliargv--processargv-options)
-    + [`log(verbosity, ...args)`](#logverbosity-args)
-    + [`logStream(verbosity, stream)`](#logstreamverbosity-stream)
-    + [`static Verbosity`](#static-verbosity)
-  * [`class Rule`](#class-rule)
-    + [`promake`](#promake)
-    + [`targets`](#targets)
-    + [`prerequisites`](#prerequisites)
-    + [`args`](#args)
-    + [`description([newDescription])`](#descriptionnewdescription)
-    + [`make(executionContext?: ExecutionContext)`](#makeexecutioncontext-executioncontext)
-    + [`then(onResolved, [onRejected])`](#thenonresolved-onrejected)
-    + [`catch(onRejected)`](#catchonrejected)
-    + [`finally(onFinally)`](#finallyonfinally)
-  * [The `Resource` interface](#the-resource-interface)
-  * [The `HashResource` interface](#the-hashresource-interface)
-- [How to](#how-to)
-  * [Glob files](#glob-files)
-  * [Perform File System Operations](#perform-file-system-operations)
-  * [Execute Shell Commands](#execute-shell-commands)
-  * [Pass args through to a shell command](#pass-args-through-to-a-shell-command)
-  * [Make Tasks Prerequisites of Other Tasks](#make-tasks-prerequisites-of-other-tasks)
-  * [Depend on Values of Environment Variables](#depend-on-values-of-environment-variables)
-  * [List available tasks](#list-available-tasks)
-- [Examples](#examples)
-  * [Transpiling files with Babel](#transpiling-files-with-babel)
-  * [Basic Webapp](#basic-webapp)
+- [Why promake? Why not `jake`, `sake`, etc?](#why-promake--why-not-jake-sake-etc)
+
+* [Quick start](#quick-start)
+  - [Install promake](#install-promake)
+  - [Create a make script](#create-a-make-script)
+  - [Run the make script](#run-the-make-script)
+* [API Reference](#api-reference)
+  - [`class Promake`](#class-promake)
+    - [`rule(targets, [prerequisites], [recipe], [options])`](#ruletargets-prerequisites-recipe-options)
+    - [`hashRule(algorithm, target, prerequisites, [recipe], [options])`](#hashrulealgorithm-target-prerequisites-recipe-options)
+    - [`task(name, [prerequisites], [recipe])`](#taskname-prerequisites-recipe)
+    - [`make(target)`](#maketarget)
+    - [`exec(command, [options])`](#execcommand-options)
+    - [`spawn(command, [args], [options])`](#spawncommand-args-options)
+    - [`cli(argv = process.argv, [options])`](#cliargv--processargv-options)
+    - [`log(verbosity, ...args)`](#logverbosity-args)
+    - [`logStream(verbosity, stream)`](#logstreamverbosity-stream)
+    - [`static Verbosity`](#static-verbosity)
+  - [`class Rule`](#class-rule)
+    - [`promake`](#promake)
+    - [`targets`](#targets)
+    - [`prerequisites`](#prerequisites)
+    - [`args`](#args)
+    - [`description([newDescription])`](#descriptionnewdescription)
+    - [`make(executionContext?: ExecutionContext)`](#makeexecutioncontext-executioncontext)
+    - [`then(onResolved, [onRejected])`](#thenonresolved-onrejected)
+    - [`catch(onRejected)`](#catchonrejected)
+    - [`finally(onFinally)`](#finallyonfinally)
+  - [The `Resource` interface](#the-resource-interface)
+  - [The `HashResource` interface](#the-hashresource-interface)
+* [How to](#how-to)
+  - [Glob files](#glob-files)
+  - [Perform File System Operations](#perform-file-system-operations)
+  - [Execute Shell Commands](#execute-shell-commands)
+  - [Pass args through to a shell command](#pass-args-through-to-a-shell-command)
+  - [Make Tasks Prerequisites of Other Tasks](#make-tasks-prerequisites-of-other-tasks)
+  - [Depend on Values of Environment Variables](#depend-on-values-of-environment-variables)
+  - [List available tasks](#list-available-tasks)
+* [Examples](#examples)
+  - [Transpiling files with Babel](#transpiling-files-with-babel)
+  - [Basic Webapp](#basic-webapp)
 
 <!-- tocstop -->
 
-## Why promake?  Why not `jake`, `sake`, etc?
+## Why promake? Why not `jake`, `sake`, etc?
 
 I wouldn't have introduced a new build tool if I hadn't thought I could significantly improve on what others offer.
 Here is what promake does that others don't:
 
 #### Promise-based interface
+
 All other JS build tools I've seen have a callback-based API, which is much more cumbersome to use on modern JS VMs
 than promises and `async`/`await`
 
 #### Supports arbitrary resource types as targets and prerequistes
-In addition to files.  For instance you could have a rule that only builds a given docker image if some files or other
+
+In addition to files. For instance you could have a rule that only builds a given docker image if some files or other
 docker images have been updated since the last image was created.
 
 #### No inversion of control container like `jake`, `mocha`, etc.
-You tell it to run the CLI in your script, instead of running your script via a CLI.  This means:
-* You can easily use ES2015 and Coffeescript since you control the script
-* It doesn't pollute the global namespace with its own methods like `jake` does
-* It's obvious how to split your rule and task definitions into multiple files
-* You could even use it in the browser for optimizing various chains of contingent operations
+
+You tell it to run the CLI in your script, instead of running your script via a CLI. This means:
+
+- You can easily use ES2015 and Coffeescript since you control the script
+- It doesn't pollute the global namespace with its own methods like `jake` does
+- It's obvious how to split your rule and task definitions into multiple files
+- You could even use it in the browser for optimizing various chains of contingent operations
 
 # Quick start
 
@@ -83,12 +90,13 @@ npm install --save-dev promake
 ### Create a make script
 
 Save the following file as `promake` (or whatever name you want):
+
 ```js
 #!/usr/bin/env node
 
 const Promake = require('promake')
 
-const {task, cli} = new Promake()
+const { task, cli } = new Promake()
 
 task('hello', () => console.log('hello world!'))
 
@@ -96,6 +104,7 @@ cli()
 ```
 
 Make the script executable:
+
 ```
 > chmod +x promake
 ```
@@ -111,7 +120,7 @@ hello world!
 
 ## `class Promake`
 
-`Promake` is just a class that you instantiate, add rules and tasks to, and then tell what to run.  All of its methods
+`Promake` is just a class that you instantiate, add rules and tasks to, and then tell what to run. All of its methods
 are autobound, so you can write `const {task, rule, cli} = new Promake()` and then run the methods directly without any
 problems.
 
@@ -124,31 +133,36 @@ If all `targets` exist and are newer than all `prerequisites`, `promake` will as
 the `recipe`.
 
 If there is another rule for a given prerequisite, `promake` will run that rule first before running the recipe for this
-rule.  If any prerequisite doesn't exist and there is no rule for it, the build will fail.
+rule. If any prerequisite doesn't exist and there is no rule for it, the build will fail.
 
 ##### `target` (required) and `prerequisites` (optional)
+
 These can be:
-* a `string` (strings are always interpreted as file system paths relative to the working directory)
-* an object conforming to [the `Resource` interface](#the-resource-interface)
-* (*`prerequisites` only*) another `Rule`, which is the same as adding that `Rule`'s own `targets` as prerequisites.
-* or an array of the above
+
+- a `string` (strings are always interpreted as file system paths relative to the working directory)
+- an object conforming to [the `Resource` interface](#the-resource-interface)
+- (_`prerequisites` only_) another `Rule`, which is the same as adding that `Rule`'s own `targets` as prerequisites.
+- or an array of the above
 
 **Warning**: glob patterns (e.g. `src/**/*.js`) in `targets` or `prerequisites` will not be expanded; instead you must
-glob yourself and pass in the array of matching files.  See [Glob Files](#glob-files) for an example of how to do so.
+glob yourself and pass in the array of matching files. See [Glob Files](#glob-files) for an example of how to do so.
 
 ##### `recipe` (optional)
-A function that should ensure that `targets` get created or updated.  It will be called with one argument: the
+
+A function that should ensure that `targets` get created or updated. It will be called with one argument: the
 [`Rule`](#class-rule) being run.
 
 If `recipe` returns a `Promise`,
-`promake` will wait for it to resolve before moving on to the next rule or task.  If the `recipe` throws an Error or
+`promake` will wait for it to resolve before moving on to the next rule or task. If the `recipe` throws an Error or
 returns a `Promise` that rejects, the build will fail.
 
 ##### `options` (optional)
-* `runAtLeastOnce` - if true, the `recipe` will be run at least once, even if the `targets` are apparently up-to-date.
+
+- `runAtLeastOnce` - if true, the `recipe` will be run at least once, even if the `targets` are apparently up-to-date.
   This is useful for rules that need to look at the contents of targets to decide whether to update them.
 
 #### Returns
+
 The created [`Rule`](#class Rule).
 
 You can get the `Rule` for a given target by calling `rule(target)` (without `prerequisites` or `recipe`), but it will
@@ -158,7 +172,7 @@ throw and `Error` if no such `Rule` exists, or you call it with multiple targets
 
 Creates a rule that determines if it needs to be run by testing if the hash of
 the prerequisites has changed (is different than the previous has written in
-`target`, or `target` doesn't exist yet).  After it does run, it will write the
+`target`, or `target` doesn't exist yet). After it does run, it will write the
 hash to `target`.
 
 This was created to help with CI builds where timestamps can't be used to
@@ -169,27 +183,32 @@ determine whether something cached from the previous build needs to be rebuilt.
 The [`crypto.createHash`](http://devdocs.io/node/crypto#crypto_crypto_createhash_algorithm_options) algorithm to use.
 
 ##### `target` (required)
+
 This must be a `string` or `FileResource`, to which the hash of the
 `prerequisites` will be written.
 
 ##### `prerequisites` (required)
+
 This must be an array of strings (file paths) or objects conforming to [the `HashResource` interface](#the-hashresource-interface)
 **Warning**: glob patterns (e.g. `src/**/*.js`) in `targets` or `prerequisites` will not be expanded; instead you must
-glob yourself and pass in the array of matching files.  See [Glob Files](#glob-files) for an example of how to do so.
+glob yourself and pass in the array of matching files. See [Glob Files](#glob-files) for an example of how to do so.
 
 ##### `recipe` (optional)
-A function that should ensure that `targets` get created or updated.  It will be called with one argument: the
+
+A function that should ensure that `targets` get created or updated. It will be called with one argument: the
 [`Rule`](#class-rule) being run.
 
 If `recipe` returns a `Promise`,
-`promake` will wait for it to resolve before moving on to the next rule or task.  If the `recipe` throws an Error or
+`promake` will wait for it to resolve before moving on to the next rule or task. If the `recipe` throws an Error or
 returns a `Promise` that rejects, the build will fail.
 
 ##### `options` (optional)
-* `runAtLeastOnce` - if true, the `recipe` will be run at least once, even if the `targets` are apparently up-to-date.
+
+- `runAtLeastOnce` - if true, the `recipe` will be run at least once, even if the `targets` are apparently up-to-date.
   This is useful for rules that need to look at the contents of targets to decide whether to update them.
 
 #### Returns
+
 The created [`Rule`](#class Rule).
 
 ### `task(name, [prerequisites], [recipe])`
@@ -200,65 +219,73 @@ actual file that exists, similar to a [phony target in `make`](https://www.gnu.o
 Task names take precedence over file names when specifying what to build in CLI options.
 
 You can set the description for the task by calling [`.description()`](#descriptionnewdescription)
-on the returned `Rule`.  This description will be printed alongside the task
-if you call the CLI without any targets.  For example:
+on the returned `Rule`. This description will be printed alongside the task
+if you call the CLI without any targets. For example:
+
 ```js
-task('clean', () =>
-  require('fs-extra').remove('build')
-).description('removes build output')
+task('clean', () => require('fs-extra').remove('build')).description(
+  'removes build output'
+)
 ```
 
 ##### `name`
+
 The name of the task
 
 ##### `prerequisites` (optional)
+
 These take the same form as for a `rule`, and if given, `promake` will ensure that they exist and are
 up-to-date before the task is running, running any rules applicable to the `prerequisites` as necessary.
 
 **Warning**: putting the `name` of another task in `prerequisites` does not work because all `string`s in
-`prerequisites` are interpreted as files.  See
+`prerequisites` are interpreted as files. See
 [Make Tasks Prerequisites of Other Tasks](#make-tasks-prerequisites-of-other-tasks) for more details.
 
 ##### `recipe` (optional)
+
 If given, it will be run any time the task is requested, even if the `prerequisites` are up-to-date.
 `recipe` will be called with one argument: the [`Rule`](#class-rule) being run.
 
 If `recipe` returns a `Promise`,
-`promake` will wait for it to resolve before moving on to the next rule or task.  If the `recipe` throws an Error or
+`promake` will wait for it to resolve before moving on to the next rule or task. If the `recipe` throws an Error or
 returns a `Promise` that rejects, the build will fail.
 
 #### Returns
+
 The created [`Rule`](#class Rule).
 
 Calling `task(name)` without any `prerequisites` or `recipe` looks up and returns the previously created task `Rule` for
-`name`, but *it will throw an `Error`* if no such task exists.
+`name`, but _it will throw an `Error`_ if no such task exists.
 
 ### `make(target)`
 
 Makes the given target if necessary.
 
 ##### `target`
+
 The name of a task or file, or an object conforming to the `Resource` interface
 
 #### Returns
+
 A `Promise` that will be resolved when the target recipe succeeds (or doesn't need to be rerun) or rejects when the target
 recipe fails.
 
 ### `exec(command, [options])`
 
 This is a wrapper for [`exec` from `promisify-child-process`](https://github.com/itsjustcon/node-promisify-child-process#exec)
-with a bit of extra logic to handle logging.  It has the same
+with a bit of extra logic to handle logging. It has the same
 API as [`child_process`](http://devdocs.io/node/child_process#child_process_child_process_exec_command_options_callback)
 but the returned `ChildProcess` also has `then` and `catch` methods like a `Promise`, so it can be `await`ed.
 
 ### `spawn(command, [args], [options])`
 
 This is a wrapper for [`spawn` from `promisify-child-process`](https://github.com/itsjustcon/node-promisify-child-process#spawn)
-with a bit of extra logic to handle logging.  It has the same
+with a bit of extra logic to handle logging. It has the same
 API as [`child_process`](http://devdocs.io/node/child_process#child_process_child_process_spawn_command_args_options)
 but the returned `ChildProcess` also has `then` and `catch` methods like a `Promise`, so it can be `await`ed.
 
 ### `cli(argv = process.argv, [options])`
+
 Runs the command-line interface for the given arguments, which should include requested targets
 (names of files or tasks).
 Unless `options.exit === false`, after running all requested targets, it will exit the process with a code
@@ -267,40 +294,51 @@ of 0 if the build succeeded, and nonzero if the build failed.
 If no targets are requested, prints usage info and the list of available tasks and exits with a code of 0.
 
 ##### `argv` (optional, default: `process.argv`)
-The command-line arguments.  May include:
-* Task names - these tasks will be run, in the order requested
-* File names - rules for these files will be run, in the order requested
-* `--quiet`, `-q`: suppress output
+
+The command-line arguments. May include:
+
+- Task names - these tasks will be run, in the order requested
+- File names - rules for these files will be run, in the order requested
+- `--quiet`, `-q`: suppress output
 
 As long as none of the args you want to pass don't correspond to a target name,
 you can just add them after the target:
+
 ```
 runDocker --rm --env FOO=BAR
 ```
 
 But you can pass any arbitrary args to the rule for a target by adding
 `-- args...` after the rule:
+
 ```
 runDocker -- --rm --env FOO=BAR
 ```
 
 If you want to pass args to multiple rules, put another `--` after the args to a rule:
+
 ```
 runDocker -- --rm --env FOO=BAR -- runNpm -- install --save-dev somepackage
 ```
+
 (args to rule for `runDocker`: `--rm --env FOO=BAR`, args to rule for `runNpm`: `install --save-dev somepackage`)
 
 If, god forbit, you want to pass `--` as an arg to a rule, use `----`:
+
 ```
 runNpm -- nyc ---- --grep something
 ```
+
 (args to rule for `runNpm` become `nyc -- --grep something`)
 
 ##### `options` (optional)
+
 An object that may have the following properties:
-* `exit` - unless this is `false`, `cli()` will exit once it has finished running the requested tasks and file rules.
+
+- `exit` - unless this is `false`, `cli()` will exit once it has finished running the requested tasks and file rules.
 
 #### Returns
+
 A `Promise` that will resolve when `Promake` finishes running the requested tasks and file rules, or throw if it fails
 (but this is only useful if `options.exit === false` to prevent `cli()` from calling `process.exit` when it's done).
 
@@ -334,7 +372,7 @@ An enumeration of verbosity levels for logging: has keys `QUIET`, `DEFAULT`, and
 
 ## `class Rule`
 
-This is an instance of a rule created by `Promake.rule` or `Promake.task`.  It has the following properties:
+This is an instance of a rule created by `Promake.rule` or `Promake.task`. It has the following properties:
 
 ### `promake`
 
@@ -354,14 +392,14 @@ Any args for this rule (from the [CLI](#cliargv--processargv-options), usually)
 
 ### `description([newDescription])`
 
-Gets or sets the description of this rule.  If you provide an argument,
-sets the description and returns this rule.  Otherwise, returns the
+Gets or sets the description of this rule. If you provide an argument,
+sets the description and returns this rule. Otherwise, returns the
 description.
 
 ### `make(executionContext?: ExecutionContext)`
 
-Starts running this rule if it hasn't already been run in `executionContext`.  An `ExecutionContext` will be created
-if none was passed.  Returns a `Promise` that will resolve or reject when the rule finished running successfully or
+Starts running this rule if it hasn't already been run in `executionContext`. An `ExecutionContext` will be created
+if none was passed. Returns a `Promise` that will resolve or reject when the rule finished running successfully or
 failed.
 
 ### `then(onResolved, [onRejected])`
@@ -379,10 +417,10 @@ Same as calling `make().finally(onFinally)`.
 ## The `Resource` interface
 
 This is an abstraction that allows `promake` to apply the same build logic to input and output resources of any type,
-not just files.  (Internally, `promake` converts all `strings` in `targets` and `prerequisites` to `FileResource`s.)
+not just files. (Internally, `promake` converts all `strings` in `targets` and `prerequisites` to `FileResource`s.)
 
 **Warning**: due to the semantics of JS [Maps](http://devdocs.io/javascript/global_objects/map), two `Resource`
-instances are always considered different, even if they represent the same resource.  So if you are using non-file
+instances are always considered different, even if they represent the same resource. So if you are using non-file
 `Resource`s, you should only create and use a single instance for a given resource.
 
 Currently, instances need to define only one method:
@@ -395,7 +433,7 @@ Otherwise, it should resolve to the resource's last modified time, in millisecon
 ## The `HashResource` interface
 
 This is an abstraction that allows `promake` to apply the same build logic to input and output resources of any type,
-not just files.  (Internally, `promake` converts all `strings` in `targets` and `prerequisites` to `FileResource`s.)
+not just files. (Internally, `promake` converts all `strings` in `targets` and `prerequisites` to `FileResource`s.)
 
 Currently, instances need to define only one method:
 
@@ -409,34 +447,41 @@ from the resource is relevant (e.g. the contents of a file, which is what
 
 ## Glob files
 
-`promake` has no built-in globbing; you must pass arrays of files to `rule`s and `task`s.  This is easy with the
+`promake` has no built-in globbing; you must pass arrays of files to `rule`s and `task`s. This is easy with the
 `glob` package:
+
 ```sh
 npm install --save-dev glob
 ```
 
 In your promake script:
+
 ```js
 const glob = require('glob').sync
 const srcFiles = glob('src/**/*.js')
-const libFiles = srcFiles.map(file => file.replace(/^src/, 'lib'))
-rule(libFiles, srcFiles, () => { /* code that compiles srcFiles to libFiles */ })
+const libFiles = srcFiles.map((file) => file.replace(/^src/, 'lib'))
+rule(libFiles, srcFiles, () => {
+  /* code that compiles srcFiles to libFiles */
+})
 ```
 
 ## Perform File System Operations
 
 I recommend using [`fs-extra`](https://github.com/jprichardson/node-fs-extra):
+
 ```sh
 npm install --save-dev fs-extra
 ```
 
 To perform a single operation in a task, you can just return the `Promise` from async `fs-extra` operations:
+
 ```js
 const fs = require('fs-extra')
 rule(dest, src, () => fs.copy(src, dest))
 ```
 
 To perform multiple operations one after another, you can use an async lambda and `await` each operation:
+
 ```js
 const path = require('path')
 const fs = require('fs-extra')
@@ -450,16 +495,19 @@ rule(dest, src, async () => {
 
 Use the [`exec` method](#execcommand-options)
 or the [`spawn` method](#spawncommand-args-options) of your `Promake` instance.
+
 ```js
-const {rule, exec, spawn} = new Promake()
+const { rule, exec, spawn } = new Promake()
 ```
 
 To run a single command in a task, you can just return the result of `exec` or `spawn` because it is Promise-like:
+
 ```js
 rule(dest, src, () => exec(`cp ${src} ${dest}`))
 ```
 
 To run multiple commands, you can use an async lambda and `await` each `exec` or `spawn` call:
+
 ```js
 rule(dest, src, async () => {
   await exec(`cp ${src} ${dest}`)
@@ -473,12 +521,13 @@ rule(dest, src, async () => {
 The args from the CLI are avaliable on [`Rule.args`](#args):
 
 ```js
-const {rule, spawn} = new Promake()
+const { rule, spawn } = new Promake()
 
-task('npm', rule => spawn('npm', rule.args))
+task('npm', (rule) => spawn('npm', rule.args))
 ```
 
 And run your task with:
+
 ```
 ./promake npm -- install --save-dev somepackage
 ```
@@ -490,7 +539,8 @@ See [CLI documentation](#cliargv--processargv-options) for more details.
 Putting the `name` of another task in the `prerequisites` of `rule` or `task` does not work because all `string`s in
 `prerequisites` are interpreted as files.
 
-Instead, you can just include the `Rule` returned by `rule` or `task` in the `prerequisites` of another.  For example:
+Instead, you can just include the `Rule` returned by `rule` or `task` in the `prerequisites` of another. For example:
+
 ```js
 const serverTask = task('server', [...serverBuildFiles, ...universalBuildFiles])
 const clientTask = task('client', clientBuildFiles)
@@ -498,6 +548,7 @@ task('build', [serverTask, clientTask])
 ```
 
 Or you can call `task(name)` to get a reference to the previously created `Rule`:
+
 ```js
 task('server', [...serverBuildFiles, ...universalBuildFiles])
 task('client', clientBuildFiles)
@@ -505,6 +556,7 @@ task('build', [task('server'), task('client')])
 ```
 
 Sometimes I like to use the following structure for defining an `all` task:
+
 ```js
 task('all', [
   task('server', [...serverBuildFiles, ...universalBuildFiles]),
@@ -515,6 +567,7 @@ task('all', [
 ## Depend on Values of Environment Variables
 
 Use the [`promake-env` package](https://github.com/jcoreio/promake-env):
+
 ```sh
 npm install --save-dev promake-env
 ```
@@ -533,7 +586,7 @@ rule(lib, [...src, buildEnv], () => exec('babel src/ --out-dir lib'))
 
 ## List available tasks
 
-Run the CLI without specifying any targets.  For instance if your
+Run the CLI without specifying any targets. For instance if your
 build file is `promake`, run:
 
 ```
@@ -560,11 +613,13 @@ Tasks:
 ## Transpiling files with Babel
 
 Install `glob`:
+
 ```sh
 npm install --save-dev glob
 ```
 
 Create the following promake script:
+
 ```js
 #!/usr/bin/env node
 
@@ -572,10 +627,10 @@ const Promake = require('promake')
 const glob = require('glob').sync
 
 const srcFiles = glob('src/**/*.js')
-const libFiles = srcFiles.map(file => file.replace(/^src/, 'lib'))
+const libFiles = srcFiles.map((file) => file.replace(/^src/, 'lib'))
 const libPrerequisites = [...srcFiles, '.babelrc', ...glob('src/**/.babelrc')]
 
-const {rule, task, exec, cli} = new Promake()
+const { rule, task, exec, cli } = new Promake()
 rule(libFiles, libPrerequisites, () => exec(`babel src/ --out-dir lib`))
 task('build', libFiles)
 
@@ -583,17 +638,22 @@ cli()
 ```
 
 The `libFiles` `rule` tells `promake`:
-* That running the recipe will create the files in `libFiles`
-* That it should only run the recipe if a file in `libFiles` is older than a file in `libPrerequistes`
+
+- That running the recipe will create the files in `libFiles`
+- That it should only run the recipe if a file in `libFiles` is older than a file in `libPrerequistes`
 
 If you want to run `babel` separately on each file, so that it doesn't rebuild any files that haven't changed, you can
 create a rule for each file:
+
 ```js
-srcFiles.forEach(srcFile => {
+srcFiles.forEach((srcFile) => {
   const libFile = srcFile.replace(/^src/, 'lib')
-  rule(libFile, [srcFile, '.babelrc'], () => exec(`babel ${srcFile} -o ${libFile}`))
+  rule(libFile, [srcFile, '.babelrc'], () =>
+    exec(`babel ${srcFile} -o ${libFile}`)
+  )
 })
 ```
+
 However, I don't recommend this because `babel-cli` takes time to start up and this will generally be much slower than
 just recompiling the entire directory in a single `babel` command.
 
@@ -602,18 +662,18 @@ just recompiling the entire directory in a single `babel` command.
 This is an example promake script for a webapp with the following structure:
 
 - `build/`
-  * `assets/`
-    + `client.bundle.js` (client webpack bundle)
-  * `server/` (compiled output of `src/server`)
-  * `universal/` (compiled output of `src/universal`)
-  * `.clientEnv` (environment variables for last client build)
-  * `.dockerEnv` (environment variables for last docker build)
-  * `.serverEnv` (environment variables for last server build)
-  * `.universalEnv` (environment variables for last universal build)
+  - `assets/`
+    - `client.bundle.js` (client webpack bundle)
+  - `server/` (compiled output of `src/server`)
+  - `universal/` (compiled output of `src/universal`)
+  - `.clientEnv` (environment variables for last client build)
+  - `.dockerEnv` (environment variables for last docker build)
+  - `.serverEnv` (environment variables for last server build)
+  - `.universalEnv` (environment variables for last universal build)
 - `src/`
-  * `client/`
-  * `server/`
-  * `universal/` (code shared by `client` and `server`)
+  - `client/`
+  - `server/`
+  - `universal/` (code shared by `client` and `server`)
 - `.babelrc`
 - `.dockerignore`
 - `Dockerfile`
@@ -628,13 +688,27 @@ const fs = require('fs-extra')
 
 const serverEnv = 'build/.serverEnv'
 const serverSourceFiles = glob('src/server/**/*.js')
-const serverBuildFiles = serverSourceFiles.map(file => file.replace(/^src/, 'build'))
-const serverPrerequistes = [...serverSourceFiles, serverEnv, '.babelrc', ...glob('src/server/**/.babelrc')]
+const serverBuildFiles = serverSourceFiles.map((file) =>
+  file.replace(/^src/, 'build')
+)
+const serverPrerequistes = [
+  ...serverSourceFiles,
+  serverEnv,
+  '.babelrc',
+  ...glob('src/server/**/.babelrc'),
+]
 
 const universalEnv = 'build/.universalEnv'
 const universalSourceFiles = glob('src/universal/**/*.js')
-const universalBuildFiles = universalSourceFiles.map(file => file.replace(/^src/, 'build'))
-const universalPrerequistes = [...universalSourceFiles, universalEnv, '.babelrc', ...glob('src/universal/**/.babelrc')]
+const universalBuildFiles = universalSourceFiles.map((file) =>
+  file.replace(/^src/, 'build')
+)
+const universalPrerequistes = [
+  ...universalSourceFiles,
+  universalEnv,
+  '.babelrc',
+  ...glob('src/universal/**/.babelrc'),
+]
 
 const clientEnv = 'build/.clientEnv'
 const clientPrerequisites = [
@@ -645,13 +719,11 @@ const clientPrerequisites = [
   '.babelrc',
   ...glob('src/client/**/.babelrc'),
 ]
-const clientBuildFiles = [
-  'build/assets/client.bundle.js',
-]
+const clientBuildFiles = ['build/assets/client.bundle.js']
 
 const dockerEnv = 'build/.dockerEnv'
 
-const {rule, task, cli, exec} = new Promake()
+const { rule, task, cli, exec } = new Promake()
 const envRule = require('promake-env').envRule(rule)
 
 envRule(serverEnv, ['NODE_ENV', 'BABEL_ENV'])
@@ -659,19 +731,24 @@ envRule(universalEnv, ['NODE_ENV', 'BABEL_ENV'])
 envRule(clientEnv, ['NODE_ENV', 'BABEL_ENV', 'NO_UGLIFY', 'CI'])
 envRule(dockerEnv, ['NPM_TOKEN'])
 
-rule(serverBuildFiles, serverPrerequistes, () => exec('babel src/server/ --out-dir build/server'))
-rule(universalBuildFiles, universalPrerequistes, () => exec('babel src/universal/ --out-dir build/universal'))
+rule(serverBuildFiles, serverPrerequistes, () =>
+  exec('babel src/server/ --out-dir build/server')
+)
+rule(universalBuildFiles, universalPrerequistes, () =>
+  exec('babel src/universal/ --out-dir build/universal')
+)
 rule(clientBuildFiles, clientPrerequisites, async () => {
   await fs.mkdirs('build')
   await exec('webpack --progress --colors')
 })
 
 task('server', [...serverBuildFiles, ...universalBuildFiles]),
-task('client', clientBuildFiles),
-
-task('docker', [task('server'), task('client'), 'Dockerfile', '.dockerignore', dockerEnv], () =>
-  exec(`docker build . --build-arg NPM_TOKEN=${process.env.NPM_TOKEN}`)
-)
+  task('client', clientBuildFiles),
+  task(
+    'docker',
+    [task('server'), task('client'), 'Dockerfile', '.dockerignore', dockerEnv],
+    () => exec(`docker build . --build-arg NPM_TOKEN=${process.env.NPM_TOKEN}`)
+  )
 
 task('clean', () => fs.remove('build'))
 

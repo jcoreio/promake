@@ -16,6 +16,9 @@ export const HashResourceType: t.TypeAlias<HashResource> = t.alias(
 )
 
 HashResourceType.addConstraint((resource: any): ?string => {
-  if (typeof resource.updateHash !== 'function' || resource.updateHash.length !== 1)
+  if (
+    typeof resource.updateHash !== 'function' ||
+    resource.updateHash.length !== 1
+  )
     return 'must have an updateHash method that takes one argument'
 })
