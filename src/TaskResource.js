@@ -16,7 +16,7 @@ class TaskResource implements Resource {
     Object.assign(this, props)
   }
 
-  lastModified = async (): Promise<?number> => {
+  lastModified: () => Promise<?number> = async (): Promise<?number> => {
     const rule = this.promake.rules.get(this)
     if (!rule) throw new Error(`missing rule for ${this.toString()}`)
     return rule.lastFinishTime

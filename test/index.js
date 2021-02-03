@@ -6,8 +6,7 @@ import sinon from 'sinon'
 import {exec} from 'promisify-child-process'
 import fs from 'fs-extra'
 import path from 'path'
-import {RuntimeError, RuntimeTypeError} from 'flow-runtime'
-
+import {RuntimeTypeError} from 'typed-validators'
 import Promake from '../src'
 import TestResource from './TestResource'
 
@@ -30,6 +29,7 @@ describe('Promake', () => {
         const {task} = new Promake()
         task('foo', () => {})
         task('bar', () => {})
+        // $FlowFixMe
         expect(() => task(['foo', 'bar'])).to.throw(Error)
       })
       it('throws when no task for target exists', () => {
@@ -49,20 +49,28 @@ describe('Promake', () => {
     })
     it('throws when invalid target types are given', () => {
       const {rule} = new Promake()
-      expect(() => rule(2, () => {})).to.throw(RuntimeError)
-      expect(() => rule([2], () => {})).to.throw(RuntimeError)
-      expect(() => rule([() => {}], () => {})).to.throw(RuntimeError)
-      expect(() => rule(rule('hello', () => {}), () => {})).to.throw(RuntimeError)
+      // $FlowFixMe
+      expect(() => rule(2, () => {})).to.throw(RuntimeTypeError)
+      // $FlowFixMe
+      expect(() => rule([2], () => {})).to.throw(RuntimeTypeError)
+      // $FlowFixMe
+      expect(() => rule([() => {}], () => {})).to.throw(RuntimeTypeError)
+      // $FlowFixMe
+      expect(() => rule(rule('hello', () => {}), () => {})).to.throw(RuntimeTypeError)
     })
     it('throws when invalid prerequisite types are given', () => {
       const {rule} = new Promake()
-      expect(() => rule('hello', 2, () => {})).to.throw(RuntimeError)
-      expect(() => rule('hello', [2], () => {})).to.throw(RuntimeError)
-      expect(() => rule('hello', [() => {}], () => {})).to.throw(RuntimeError)
+      // $FlowFixMe
+      expect(() => rule('hello', 2, () => {})).to.throw(RuntimeTypeError)
+      // $FlowFixMe
+      expect(() => rule('hello', [2], () => {})).to.throw(RuntimeTypeError)
+      // $FlowFixMe
+      expect(() => rule('hello', [() => {}], () => {})).to.throw(RuntimeTypeError)
     })
     it ('throws when a rule for a given target already exists', () => {
       const {rule} = new Promake()
       rule('foo', () => {})
+      // $FlowFixMe
       expect(() => rule('foo', () => {})).to.throw(Error)
     })
     describe('with no prerequisites or receipe', () => {
@@ -210,19 +218,26 @@ describe('Promake', () => {
     })
     it('throws when invalid target types are given', () => {
       const {hashRule} = new Promake()
-      expect(() => hashRule('md5', 2, ['bar'], () => {})).to.throw(RuntimeError)
-      expect(() => hashRule('md5', ['foo'], ['bar'], () => {})).to.throw(RuntimeError)
-      expect(() => hashRule('md5', () => {}, () => {})).to.throw(RuntimeError)
+      // $FlowFixMe
+      expect(() => hashRule('md5', 2, ['bar'], () => {})).to.throw()
+      // $FlowFixMe
+      expect(() => hashRule('md5', ['foo'], ['bar'], () => {})).to.throw()
+      // $FlowFixMe
+      expect(() => hashRule('md5', () => {}, () => {})).to.throw()
     })
     it('throws when invalid prerequisite types are given', () => {
       const {hashRule} = new Promake()
-      expect(() => hashRule('md5', 'hello', 2, () => {})).to.throw(RuntimeError)
-      expect(() => hashRule('md5', 'hello', [2], () => {})).to.throw(RuntimeError)
-      expect(() => hashRule('md5', 'hello', [() => {}], () => {})).to.throw(RuntimeError)
+      // $FlowFixMe
+      expect(() => hashRule('md5', 'hello', 2, () => {})).to.throw(RuntimeTypeError)
+      // $FlowFixMe
+      expect(() => hashRule('md5', 'hello', [2], () => {})).to.throw(RuntimeTypeError)
+      // $FlowFixMe
+      expect(() => hashRule('md5', 'hello', [() => {}], () => {})).to.throw(RuntimeTypeError)
     })
     it ('throws when a rule for a given target already exists', () => {
       const {rule, hashRule} = new Promake()
       rule('foo', () => {})
+      // $FlowFixMe
       expect(() => hashRule('md5', 'foo', ['bar'], () => {})).to.throw(Error)
     })
     it('accepts custom HashResource implementations as prerequisites', () => {

@@ -1,6 +1,6 @@
 // @flow
 
-const Verbosity: {[name: string]: VerbosityLevel} = {
+const Verbosity: {QUIET: 0, DEFAULT: 1, HIGH: 2} = {
   QUIET: 0,
   DEFAULT: 1,
   HIGH: 2,

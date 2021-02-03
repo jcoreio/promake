@@ -35,7 +35,7 @@ class HashRule extends Rule {
     }
   }
 
-  _make = async (context: ExecutionContext): Promise<any> => {
+  _make: (context: ExecutionContext) => Promise<any> = async (context: ExecutionContext): Promise<any> => {
     const hash = createHash(this.hashAlgorithm)
     const {targets, promake, recipe} = this
     const prerequisites: $ReadOnlyArray<HashResource> = (this.prerequisites: any)

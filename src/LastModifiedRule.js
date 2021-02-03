@@ -6,7 +6,7 @@ import Verbosity from './Verbosity'
 import type ExecutionContext from './ExecutionContext'
 
 class LastModifiedRule extends Rule {
-  _make = async (context: ExecutionContext): Promise<any> => {
+  _make: (context: ExecutionContext) => Promise<any> = async (context: ExecutionContext): Promise<any> => {
     const {targets, promake, prerequisites, recipe} = this
     const targetTimes = await Promise.all(targets.map(target => target.lastModified()))
     const prerequisiteTimes = []

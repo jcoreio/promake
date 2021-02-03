@@ -11,12 +11,12 @@ export default class TestResource implements Resource {
     this.name = name
   }
 
-  touch = async (): Promise<number> => {
+  touch: () => Promise<number> = async (): Promise<number> => {
     await delay(10)
     return this.mtime = Date.now()
   }
 
-  lastModified = async (): Promise<?number> => {
+  lastModified: () => Promise<?number> = async (): Promise<?number> => {
     return this.mtime
   }
 

@@ -4,8 +4,6 @@
     "transform-class-properties",
     "transform-export-extensions",
     "transform-object-rest-spread",
-    "transform-decorators-legacy",
-    ["flow-runtime", {"assert": false, "optInOnly": true}]
   ],
   "presets": [
     "flow"
@@ -18,8 +16,6 @@
       ],
       "plugins": [
         "transform-runtime",
-        "transform-decorators-legacy",
-        ["flow-runtime", {"assert": false, "optInOnly": true}]
       ]
     },
     "coverage": {
@@ -29,8 +25,6 @@
       ],
       "plugins": [
         "transform-runtime",
-        "transform-decorators-legacy",
-        ["flow-runtime", {"assert": false, "optInOnly": true}],
         "istanbul"
       ]
     },
@@ -41,8 +35,6 @@
       ],
       "plugins": [
         "transform-runtime",
-        "transform-decorators-legacy",
-        ["flow-runtime", {"assert": false, "optInOnly": true}]
       ]
     },
   }
