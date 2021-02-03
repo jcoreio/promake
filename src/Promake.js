@@ -335,21 +335,21 @@ export default class Promake {
     algorithm: string,
     target: string | FileResource,
     prerequisites?: any,
-    recipe?: (rule: Rule) => any,
+    recipe?: (rule: HashRule) => any,
     options?: { runAtLeastOnce?: boolean }
-  ) => Rule) &
+  ) => HashRule) &
     ((
       algorithm: string,
       target: string | FileResource,
-      recipe?: (rule: Rule) => any,
+      recipe?: (rule: HashRule) => any,
       options?: { runAtLeastOnce?: boolean }
-    ) => Rule) = (
+    ) => HashRule) = (
     algorithm: string,
     target: string | FileResource,
     prerequisites?: any,
     recipe?: any,
     options?: any
-  ): Rule => {
+  ): HashRule => {
     const finalTarget: FileResource = (this._normalizeResource(target): any)
     if (typeof prerequisites === 'function') {
       options = (recipe: any)
@@ -359,6 +359,8 @@ export default class Promake {
     if (!prerequisites && !recipe) {
       const rule = this.rules.get(finalTarget)
       if (!rule) throw new Error(`No rule found for ${target.toString()}`)
+      if (!(rule instanceof HashRule))
+        throw new Error(`Rule for target is not a HashRule`)
       return rule
     }
     const rule = new HashRule({

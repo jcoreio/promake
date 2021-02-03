@@ -1,6 +1,7 @@
 import { Resource } from './Resource'
 import FileResource from './FileResource'
 import Rule from './Rule'
+import HashRule from './HashRule'
 import TaskResource from './TaskResource'
 import { ChildProcess, ExecOptions, SpawnOptions } from 'child_process'
 import Verbosity from './Verbosity'
@@ -57,15 +58,15 @@ export default class Promake {
     algorithm: string,
     target: string | FileResource,
     prerequisites?: any,
-    recipe?: (rule: Rule) => any,
+    recipe?: (rule: HashRule) => any,
     options?: { runAtLeastOnce?: boolean }
-  ): Rule
+  ): HashRule
   hashRule(
     algorithm: string,
     target: string | FileResource,
-    recipe?: (rule: Rule) => any,
+    recipe?: (rule: HashRule) => any,
     options?: { runAtLeastOnce?: boolean }
-  ): Rule
+  ): HashRule
 
   task(name: string, prerequisites?: any, recipe?: (rule: Rule) => any): Rule
   task(name: string, recipe?: (rule: Rule) => any): Rule
