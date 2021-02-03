@@ -9,21 +9,16 @@ export type Props = {
   promake: Promake,
   targets: $ReadOnlyArray<Resource>,
   prerequisites: $ReadOnlyArray<Resource>,
-  recipe: ?(rule: Rule) => ?Promise<any>,
+  recipe: ?(rule: Rule) => any,
   runAtLeastOnce?: boolean,
 }
 
-class Rule {
-  static RuleType: t.TypeAlias<Rule> = t.alias(
-    'Rule',
-    t.instanceOf(() => Rule)
-  )
-
+export default class Rule {
   promake: Promake
   targets: $ReadOnlyArray<Resource>
   prerequisites: $ReadOnlyArray<Resource>
   args: Array<string> = []
-  recipe: ?(rule: Rule) => ?Promise<any>
+  recipe: ?(rule: Rule) => any
   runAtLeastOnce: boolean = false
 
   lastFinishTime: ?number
@@ -81,4 +76,7 @@ class Rule {
   }
 }
 
-module.exports = Rule
+export const RuleType: t.TypeAlias<Rule> = t.alias(
+  'Rule',
+  t.instanceOf(() => Rule)
+)

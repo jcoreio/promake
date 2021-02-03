@@ -8,7 +8,7 @@ import promisify from 'es6-promisify'
 
 const stat = promisify(fs.stat)
 
-class FileResource implements Resource, HashResource {
+export default class FileResource implements Resource, HashResource {
   file: string
 
   constructor(file: string) {
@@ -43,5 +43,3 @@ class FileResource implements Resource, HashResource {
     return relative(process.cwd(), this.file)
   }
 }
-
-module.exports = FileResource

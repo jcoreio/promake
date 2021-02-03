@@ -6,4 +6,4 @@ import type { HashResource } from './HashResource'
 
 export type { Resource, HashResource }
 
-module.exports = Promake
+export default Promake

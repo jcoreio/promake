@@ -3,12 +3,12 @@
 import type { Resource } from './Resource'
 import Promake from './Promake'
 
-type Props = {
+export type Props = {
   name: string,
   promake: Promake,
 }
 
-class TaskResource implements Resource {
+export default class TaskResource implements Resource {
   name: string
   promake: Promake
 
@@ -26,5 +26,3 @@ class TaskResource implements Resource {
     return this.name
   }
 }
-
-module.exports = TaskResource

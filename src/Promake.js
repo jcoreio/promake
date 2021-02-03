@@ -3,7 +3,7 @@
 import * as t from 'typed-validators'
 import { type Resource, ResourceType } from './Resource'
 import FileResource from './FileResource'
-import Rule from './Rule'
+import Rule, { RuleType } from './Rule'
 import LastModifiedRule from './LastModifiedRule'
 import HashRule from './HashRule'
 import TaskResource from './TaskResource'
@@ -15,8 +15,6 @@ import type { VerbosityLevel } from './Verbosity'
 import type { Readable } from 'stream'
 import padEnd from 'lodash.padend'
 import ExecutionContext from './ExecutionContext'
-
-const { RuleType } = Rule
 
 type Resources = Array<string | Resource> | string | Resource
 
@@ -122,7 +120,7 @@ type CliOptions = {
   exit?: boolean,
 }
 
-class Promake {
+export default class Promake {
   static VERBOSITY: typeof Verbosity = Verbosity
 
   static checkResource(resource: any, path: string) {
@@ -509,5 +507,3 @@ Tasks:
     }
   }
 }
-
-module.exports = Promake

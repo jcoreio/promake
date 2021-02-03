@@ -15,11 +15,11 @@ export type Props = {
   promake: Promake,
   targets: [FileResource],
   prerequisites: $ReadOnlyArray<HashResource>,
-  recipe: ?(rule: Rule) => ?Promise<any>,
+  recipe: ?(rule: Rule) => any,
   runAtLeastOnce?: boolean,
 }
 
-class HashRule extends Rule {
+export default class HashRule extends Rule {
   hashAlgorithm: string
 
   constructor(props: Props) {
@@ -83,5 +83,3 @@ class HashRule extends Rule {
     this.lastFinishTime = Date.now()
   }
 }
-
-module.exports = HashRule

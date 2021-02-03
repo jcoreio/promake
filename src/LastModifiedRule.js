@@ -5,7 +5,7 @@ import TaskResource from './TaskResource'
 import Verbosity from './Verbosity'
 import type ExecutionContext from './ExecutionContext'
 
-class LastModifiedRule extends Rule {
+export default class LastModifiedRule extends Rule {
   _make: (context: ExecutionContext) => Promise<any> = async (
     context: ExecutionContext
   ): Promise<any> => {
@@ -47,5 +47,3 @@ class LastModifiedRule extends Rule {
     this.lastFinishTime = Date.now()
   }
 }
-
-module.exports = LastModifiedRule
