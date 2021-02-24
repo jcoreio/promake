@@ -3,12 +3,14 @@
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import sinon from 'sinon'
-import { exec } from 'promisify-child-process'
+import { exec, spawn } from 'promisify-child-process'
 import fs from 'fs-extra'
 import path from 'path'
+import os from 'os'
 import { RuntimeTypeError } from 'typed-validators'
 import Promake from '../src'
 import TestResource from './TestResource'
+import poll from '@jcoreio/poll'
 
 describe('Promake', () => {
   describe('.task', () => {
@@ -448,6 +450,60 @@ Tasks:
       )
       expect(stdout).to.match(/^\s*$/m)
       expect(stderr).to.match(/^\s*$/m)
+    })
+    it.only(`forwards SIGINT and waits for children to exit`, async function () {
+      const tmpDir = path.join(os.tmpdir(), `promake-${Math.random()}`)
+      await fs.mkdirs(tmpDir)
+      const files = ['file1.txt', 'file2.txt'].map((file) =>
+        path.join(tmpDir, file)
+      )
+      const child = spawn(
+        'babel-node',
+        [promake, 'sigintTest', '--', ...files],
+        { stdio: 'inherit' }
+      )
+      await poll(async () => {
+        for (const file of files) {
+          expect(
+            await fs.exists(file),
+            `expected ${file} to be created by sigintTest task`
+          ).to.be.true
+        }
+      }, 50).timeout(10000)
+      await Promise.all([child, child.kill('SIGINT')])
+      for (const file of files) {
+        expect(
+          await fs.exists(file),
+          `expected ${file} to be removed by sigintTest task SIGINT handler`
+        ).to.be.false
+      }
+    })
+    it.only(`on second SIGINT, kills children with SIGKILL`, async function () {
+      const tmpDir = path.join(os.tmpdir(), `promake-${Math.random()}`)
+      await fs.mkdirs(tmpDir)
+      const files = ['file1.txt', 'file2.txt'].map((file) =>
+        path.join(tmpDir, file)
+      )
+      const child = spawn(
+        'babel-node',
+        [promake, 'sigintTest', '--', ...files],
+        { stdio: 'inherit' }
+      )
+      await poll(async () => {
+        for (const file of files) {
+          expect(
+            await fs.exists(file),
+            `expected ${file} to be created by sigintTest task`
+          ).to.be.true
+        }
+      }, 50).timeout(10000)
+      await Promise.all([child, child.kill('SIGINT'), child.kill('SIGINT')])
+      for (const file of files) {
+        expect(
+          await fs.exists(file),
+          `expected ${file} not to be removed by sigintTest task SIGINT handler`
+        ).to.be.true
+      }
     })
     describe('hash rules', () => {
       it('builds after clean', async () => {

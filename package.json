@@ -44,7 +44,7 @@
     "trailingComma": "es5"
   },
   "config": {
-    "mocha": "-r @babel/register test/configure.js 'test/**/*.js'",
+    "mocha": "-r @babel/register test/configure.js test/index.js",
     "prettier": "*.{json,md,js} '{src,test}/**/*.{js,ts}'",
     "commitizen": {
       "path": "cz-conventional-changelog"
@@ -89,6 +89,7 @@
     "@babel/register": "^7.12.10",
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
+    "@jcoreio/poll": "^2.3.1",
     "@jedwards1211/commitlint-config": "^1.0.2",
     "@jedwards1211/eslint-config": "^2.0.2",
     "@jedwards1211/eslint-config-flow": "^3.0.0",

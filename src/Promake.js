@@ -15,6 +15,7 @@ import type { VerbosityLevel } from './Verbosity'
 import type { Readable } from 'stream'
 import padEnd from 'lodash.padend'
 import ExecutionContext from './ExecutionContext'
+import handleChildProcessCleanup from './handleChildProcessCleanup'
 
 type Resources = Array<string | Resource> | string | Resource
 
@@ -249,6 +250,7 @@ export default class Promake {
     options?: child_process$execOpts = {}
   ): ChildProcess => {
     const child = exec(command, options)
+    handleChildProcessCleanup(this, child)
     if (this.verbosity >= Verbosity.DEFAULT)
       console.error(chalk.gray('$'), chalk.gray(command)) // eslint-disable-line no-console
     this._logChildProcess(child)
@@ -274,6 +276,7 @@ export default class Promake {
       return chalk.gray(`'${arg.replace(/'/g, "'\\''")}'`)
     }
     const child = spawn(command, args, options)
+    handleChildProcessCleanup(this, child)
     if (this.verbosity >= Verbosity.DEFAULT)
       // eslint-disable-next-line no-console
       console.error(
