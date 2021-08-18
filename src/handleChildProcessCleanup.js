@@ -7,7 +7,6 @@ import type Promake from './Promake'
 import Verbosity from './Verbosity'
 import { type ChildProcess } from 'child_process'
 
-let signalListenersInstalled = false
 let killCount = 0
 const runningProcesses: Set<ChildProcess> = new Set()
 
@@ -34,6 +33,9 @@ export default function handleChildProcessCleanup(
     if (killCount > 1) die()
   }
 
+  if (!runningProcesses.size) {
+    process.on('SIGINT', killHandler)
+  }
   runningProcesses.add(child)
   const cleanupChild = () => {
     child.removeListener('close', cleanupChild)
@@ -46,8 +48,4 @@ export default function handleChildProcessCleanup(
   }
   child.once('close', cleanupChild)
   child.once('error', cleanupChild)
-  if (!signalListenersInstalled) {
-    process.on('SIGINT', killHandler)
-    signalListenersInstalled = true
-  }
 }
