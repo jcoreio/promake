@@ -451,7 +451,7 @@ Tasks:
       expect(stdout).to.match(/^\s*$/m)
       expect(stderr).to.match(/^\s*$/m)
     })
-    it.only(`forwards SIGINT and waits for children to exit`, async function () {
+    it(`forwards SIGINT and waits for children to exit`, async function () {
       const tmpDir = path.join(os.tmpdir(), `promake-${Math.random()}`)
       await fs.mkdirs(tmpDir)
       const files = ['file1.txt', 'file2.txt'].map((file) =>
@@ -478,7 +478,7 @@ Tasks:
         ).to.be.false
       }
     })
-    it.only(`on second SIGINT, kills children with SIGKILL`, async function () {
+    it(`on second SIGINT, kills children with SIGKILL`, async function () {
       const tmpDir = path.join(os.tmpdir(), `promake-${Math.random()}`)
       await fs.mkdirs(tmpDir)
       const files = ['file1.txt', 'file2.txt'].map((file) =>

@@ -9,7 +9,7 @@ const timeout = setTimeout(() => {}, 60000)
 
 process.on('SIGINT', async () => {
   clearTimeout(timeout)
-  await new Promise((resolve) => setTimeout(resolve, 2000))
+  await new Promise((resolve) => setTimeout(resolve, 3000))
   fs.unlinkSync(file)
   process.exit(0)
 })
