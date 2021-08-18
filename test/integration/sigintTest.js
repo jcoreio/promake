@@ -8,8 +8,8 @@ fs.writeFileSync(file, `${__filename}:${new Date().toISOString()}`, 'utf8')
 const timeout = setTimeout(() => {}, 60000)
 
 process.on('SIGINT', async () => {
+  if (process.argv.indexOf('--hang') >= 0) return
   clearTimeout(timeout)
-  await new Promise((resolve) => setTimeout(resolve, 3000))
   fs.unlinkSync(file)
   process.exit(0)
 })

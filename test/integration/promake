@@ -1,13 +1,10 @@
 #!/usr/bin/env babel-node
-// @flow
 
 process.chdir(__dirname)
 
 const Promake = require('../../src')
 const glob = require('glob').sync
 const fs = require('fs-extra')
-const os = require('os')
-const path = require('path')
 
 const serverSourceFiles = glob('src/server/**/*.js')
 const serverBuildFiles = serverSourceFiles.map((file) =>
@@ -57,14 +54,20 @@ task('build:ci', [
 
 task('clean', () => fs.remove('build')).description('remove all build output')
 
-task('sigintTest', ({ args }) =>
-  Promise.all(
-    args.map((file) =>
-      spawn(process.execPath, [require.resolve('./sigintTest.js'), file], {
-        stdio: 'inherit',
-      })
+task('sigintTest', async ({ args }) => {
+  const files = args.filter((a) => !a.startsWith('-'))
+  const otherArgs = args.filter((a) => a.startsWith('-'))
+  await Promise.all(
+    files.map((file) =>
+      spawn(
+        process.execPath,
+        [require.resolve('./sigintTest.js'), file, ...otherArgs],
+        {
+          stdio: 'inherit',
+        }
+      )
     )
   )
-)
+})
 
 cli()

@@ -11,6 +11,7 @@ import { RuntimeTypeError } from 'typed-validators'
 import Promake from '../src'
 import TestResource from './TestResource'
 import poll from '@jcoreio/poll'
+import delay from 'waait'
 
 describe('Promake', () => {
   describe('.task', () => {
@@ -451,7 +452,7 @@ Tasks:
       expect(stdout).to.match(/^\s*$/m)
       expect(stderr).to.match(/^\s*$/m)
     })
-    it(`forwards SIGINT and waits for children to exit`, async function () {
+    it.only(`forwards SIGINT and waits for children to exit`, async function () {
       const tmpDir = path.join(os.tmpdir(), `promake-${Math.random()}`)
       await fs.mkdirs(tmpDir)
       const files = ['file1.txt', 'file2.txt'].map((file) =>
@@ -478,7 +479,7 @@ Tasks:
         ).to.be.false
       }
     })
-    it(`on second SIGINT, kills children with SIGKILL`, async function () {
+    it.only(`on second SIGINT, kills children with SIGKILL`, async function () {
       const tmpDir = path.join(os.tmpdir(), `promake-${Math.random()}`)
       await fs.mkdirs(tmpDir)
       const files = ['file1.txt', 'file2.txt'].map((file) =>
@@ -486,7 +487,7 @@ Tasks:
       )
       const child = spawn(
         'babel-node',
-        [promake, 'sigintTest', '--', ...files],
+        [promake, 'sigintTest', '--', '--hang', ...files],
         { stdio: 'inherit' }
       )
       await poll(async () => {
@@ -497,7 +498,11 @@ Tasks:
           ).to.be.true
         }
       }, 50).timeout(10000)
-      await Promise.all([child, child.kill('SIGINT'), child.kill('SIGINT')])
+      await Promise.all([
+        child,
+        child.kill('SIGINT'),
+        delay(50).then(() => child.kill('SIGINT')),
+      ])
       for (const file of files) {
         expect(
           await fs.exists(file),
